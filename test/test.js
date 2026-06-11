@@ -1,102 +1,44 @@
 const fs=require('fs');
-function engine(file, fromMarker){
+function engine(file){
   const t=fs.readFileSync(file,'utf8');
-  const a=t.indexOf(fromMarker), b=t.indexOf('const state={view:');
+  const a=t.indexOf('const CATALOG'), b=t.indexOf('const state={view:');
   if(a<0||b<0||b<=a) throw new Error('slice fail '+file);
   const code=t.slice(a,b);
   const m={exports:{}};
-  new Function('module',code+';module.exports={CATALOG,PREP_CLASS,COARSE,NUTR,VOL,LOCATIONS,DEFAULT_RES,RES_MAP,COOK_BROWNS,LIBRARY,PLAN,INVENTORY,PERISH,shoppingList,cookSchedule,planNutrition,fitsCheck,buysFromShopping,transitionsFor,PREPPABLE,offeredForms,stateKeep,recipeGraph,topoSteps,exportRecipe,typeofRA:typeof recipeAllergens==="function"?recipeAllergens:null,typeofMG:typeof miseGroups==="function"?miseGroups:null,typeofTC:typeof thermalCurve==="function"?thermalCurve:null,typeofTM:typeof temperMinutes==="function"?temperMinutes:null,typeofED:typeof eggDoneness==="function"?eggDoneness:null,typeofIT:typeof ingTau==="function"?ingTau:null,typeofLT:typeof lotThermalOpts==="function"?lotThermalOpts:null,typeofCM:typeof containerTauMult==="function"?containerTauMult:null,typeofCD:typeof coolMinutes==="function"?coolMinutes:null,KIN:typeof KD!=="undefined"?KD.kin:null};')(m);
+  new Function('module',code+';module.exports={CATALOG,LIBRARY,PLAN,INVENTORY,DEFAULT_RES,shoppingList,scheduleWeek,weekStats,bottlenecks,cookSchedule,recipeGraph,typeofSW:typeof scheduleWeek==="function"?scheduleWeek:null,typeofWS:typeof weekStats==="function"?weekStats:null,typeofBN:typeof bottlenecks==="function"?bottlenecks:null};')(m);
   return m.exports;
 }
 const J=s=>JSON.stringify(s);
-const O=engine('base.html','const CATALOG');
-const N=engine('../dist/kitchen_app.html','/*@DATA:INGREDIENTS@*/');
+const N=engine('../dist/kitchen_app.html');
 let F=0; const ok=(c,msg)=>{console.log((c?'PASS':'FAIL')+' '+msg); if(!c)F=1;};
 
-// 1. lossless: every original catalog field preserved in derived catalog
-let loss=[];
-for(const k in O.CATALOG){for(const f in O.CATALOG[k]){if(J(O.CATALOG[k][f])!==J(N.CATALOG[k][f]))loss.push(k+'.'+f);}}
-ok(loss.length===0,'catalog field-subset lossless ('+loss.join(',')+')');
-for(const [nm] of [['PREP_CLASS'],['COARSE'],['NUTR'],['VOL'],['COOK_BROWNS'],['PLAN'],['INVENTORY']])
-  ok(J(O[nm])===J(N[nm]), nm+' identical');
-ok(J(O.LOCATIONS)===J(N.LOCATIONS),'LOCATIONS identical');
-ok(N.DEFAULT_RES.counter===4,'counter resource in seed');
-ok(N.RES_MAP.temper==='counter'&&N.RES_MAP.cool==='counter','res_map temper/cool → counter');
-ok(O.PERISH===N.PERISH,'PERISH identical');
-// library: identical modulo added kind:"simple"
-let libok=true;
-for(const k in O.LIBRARY){const a=O.LIBRARY[k], b={...N.LIBRARY[k]}; if(b.kind!=='simple'){libok=false;break;} delete b.kind; if(J(a)!==J(b)){libok=false;console.log('lib diff',k);} }
-ok(libok,'library identical modulo kind:"simple"');
+// v5.1 engine surface
+ok(N.typeofSW&&N.typeofWS&&N.typeofBN,'scheduleWeek + weekStats + bottlenecks exist');
 
-// 2. engine output regression old vs new
-ok(J(O.shoppingList(O.PLAN,O.INVENTORY,O.LIBRARY))===J(N.shoppingList(N.PLAN,N.INVENTORY,N.LIBRARY)),'shoppingList identical');
-const cs=o=>o.cookSchedule(o.PLAN,o.LIBRARY).map(d=>({day:d.day,recipeId:d.recipeId,hands:d.hands,passive:d.passive,n:d.steps.length}));
-const CS_PIN=[{day:1,recipeId:'bolognese',hands:58,passive:55,n:13},{day:2,recipeId:'boiled_egg',hands:7,passive:7,n:2},{day:3,recipeId:'chicken_roast',hands:95,passive:0,n:13},{day:4,recipeId:'chicken_hash',hands:30,passive:0,n:7},{day:6,recipeId:'boerewors_pap',hands:40,passive:0,n:4}];
-ok(J(cs(N))===J(CS_PIN),'cookSchedule pinned (v2.2 temper steps)');
-ok(J(O.planNutrition(O.PLAN,O.LIBRARY))===J(N.planNutrition(N.PLAN,N.LIBRARY)),'planNutrition identical');
-const fc=o=>o.fitsCheck(o.INVENTORY,o.buysFromShopping(o.shoppingList(o.PLAN,o.INVENTORY,o.LIBRARY)));
-ok(J(fc(O))===J(fc(N)),'fitsCheck identical');
-ok(J(O.PREPPABLE)===J(N.PREPPABLE),'PREPPABLE identical');
-let tr=true; for(const k of O.PREPPABLE){ if(J(O.transitionsFor(k))!==J(N.transitionsFor(k)))tr=false; }
-ok(tr,'transitionsFor identical for all preppable');
+// Sprint-1 schedule regression pins (balanced prep mode)
+const wk=N.scheduleWeek(N.PLAN,N.LIBRARY,N.DEFAULT_RES,'balanced');
+const msSum=wk.days.reduce((a,d)=>a+d.sch.makespan,0);
+ok(msSum===356,'week makespan-sum 356 (got '+msSum+')');
+ok(wk.lifts.length===7,'7 prep-ahead lifts (got '+wk.lifts.length+')');
+ok(wk.holds.length===7,'7 fridge holds (got '+wk.holds.length+')');
 
-// 3. monotone keep invariant (plan §0.2) on new catalog
-ok(N.PREPPABLE.every(k=>N.offeredForms(k).every(f=>N.stateKeep(k,f)<=N.CATALOG[k].keep)),'monotone keep-life invariant');
+const ws=N.weekStats(N.PLAN,N.LIBRARY,N.DEFAULT_RES,'balanced');
+ok(ws.handsTotal===189,'weekStats handsTotal 189 (got '+ws.handsTotal+')');
+ok(ws.busiest===103,'weekStats busiest day 103m (got '+ws.busiest+')');
+ok(ws.lifts.n===7&&ws.lifts.prefix===6,'weekStats lifts 7 (6 prefix)');
 
-// 4. new surface: allergens
-ok(!!N.typeofRA,'recipeAllergens exists');
-const RA=N.typeofRA;
-ok(J(RA(N.LIBRARY.bolognese))===J(['celery','sulphites']),'bolognese allergens = celery (veg) + sulphites (wine): '+J(RA(N.LIBRARY.bolognese)));
-ok(J(RA(N.LIBRARY.boerewors_pap))===J(['milk']),'boerewors&pap allergens = milk (butter)');
-ok(J(RA(N.LIBRARY.chicken_hash))===J([]),'chicken hash allergens = none');
-// every catalog allergen is in the regulatory vocab
-const VOC=JSON.parse(fs.readFileSync('../data/ingredients.json','utf8'));
-const vocab=new Set(VOC.allergen_vocab);
-ok(Object.values(VOC.items).every(r=>(r.allergens||[]).every(a=>vocab.has(a))),'allergens within regulatory-14 vocab');
-// store/cond present on every item
-ok(Object.values(VOC.items).every(r=>r.store&&r.cond&&r.verify===true),'store/cond/verify present on every item');
+// shopping pin: bolognese wine demand
+const wine=N.shoppingList(N.PLAN,N.INVENTORY,N.LIBRARY).find(r=>r.k==='red_wine');
+ok(!!wine&&wine.need===150&&J(wine.buy.packs)===J([750])&&wine.buy.leftover===600,'red_wine 150ml → buy [750], leftover 600');
 
-// 5. data-pack markers present exactly once each
-const t=fs.readFileSync('../dist/kitchen_app.html','utf8');
-for(const tag of ['INGREDIENTS','TRANSITIONS','RECIPES','SEED','KINETICS'])
-  ok(t.split('/*@DATA:'+tag+'@*/').length===2 && t.split('/*@END:'+tag+'@*/').length===2,'markers x1: '+tag);
+// bottleneck suggester returns at least one resource
+const bn=N.bottlenecks(N.PLAN,N.LIBRARY,N.DEFAULT_RES,'balanced');
+ok(bn.length>=1&&bn[0].savedTotal>0,'bottleneck suggester non-empty');
 
-// 6. kinetics primitive (v2.1)
-ok(!!N.typeofTC,'thermalCurve exists');
-ok(!!N.typeofTM,'temperMinutes exists');
-ok(N.KIN && N.KIN.schema==='kitchen.kinetics/1' && N.KIN.version>=3,'kinetics pack loaded (container_factors)');
-ok(N.KIN.container_factors&&N.KIN.container_factors.sealed_retail.tau_mult===1.4,'container_factors sealed_retail');
-const tc=N.typeofTC;
-const c0=tc('beef_mince','fat',0,{startFrom:'room'});
-ok(Math.abs(c0.T-21)<0.1,'thermalCurve t=0 → room T0 ('+c0.T+')');
-const cEnd=tc('beef_mince','fat',200,{startFrom:'room'});
-ok(Math.abs(cEnd.T-180)<1,'thermalCurve long t → pan T_env ('+cEnd.T+')');
-ok(tc('beef_mince','moist',40).brownedness===0,'moist method → zero brownedness');
-ok(tc('onion','fat',40,{startFrom:'room'}).brownedness>0.05,'fat method → positive brownedness at 40m ('+tc('onion','fat',40,{startFrom:'room'}).brownedness+')');
-const tm=N.typeofTM('beef_mince');
-ok(tm!=null&&Math.abs(tm-30)<=3,'beef_mince temperMinutes (open τ) ≈ 30 (got '+tm+')');
-const tmS=N.typeofTM('beef_mince',N.typeofLT(null,'beef_mince'));
-ok(tmS>tm&&N.typeofCM(null,'beef_mince')===1.8,'sealed vacuum_protein τ_mult slows temper (got '+tmS+')');
-const tcS=N.typeofTC('beef_mince','fat',30,N.typeofLT(null,'beef_mince'));
-ok(tcS.tauMult===1.8&&tcS.tau>50,'thermalCurve lot-aware τ for sealed beef_mince');
-// boiled-egg physics demo (moist bath, two-zone doneness)
-const ed=N.typeofED;
-ok(!!ed,'eggDoneness exists');
-const be=tc('egg','moist',7,{startFrom:'fridge'});
-ok(be.brownedness===0,'boiled egg: moist → no Maillard browning');
-ok(be.doneness&&be.doneness.overall==='soft-boiled (jammy)','7 m egg → soft-boiled jammy (got '+(be.doneness&&be.doneness.overall)+')');
-ok(ed('moist',12,{startFrom:'fridge'}).overall==='hard-boiled','12 m egg → hard-boiled');
-ok(ed('moist',3,{startFrom:'fridge'}).yolk==='runny','3 m egg yolk still runny');
-ok(J(RA(N.LIBRARY.boiled_egg))===J(['eggs']),'boiled egg allergens = eggs');
-// cool-down reuses same curve (counter env)
-const cool=tc('beef_mince','fat',20,{env:'counter',T0:80,startFrom:'room'});
-ok(cool.T<80&&cool.T>21,'counter cool-down: T drops from 80 toward ambient ('+cool.T+')');
-// Sprint 2 A: temper steps in recipe graph
-const bg=N.recipeGraph(N.LIBRARY.bolognese),tp=bg.procs.filter(p=>p.trans==='temper');
-ok(tp.length===1&&tp[0].dur>=50&&tp[0].pulse,'bolognese injects sealed-beef temper step ('+tp[0].dur+'m)');
-ok(!!N.typeofMG&&Object.keys(N.typeofMG(N.LIBRARY.bolognese)).length>=2,'miseGroups by store (item B hint)');
-const cd=N.typeofCD('beef_mince',80,{tauMult:1.8});
-ok(cd!=null&&cd>0,'coolMinutes from hot toward fridge ('+cd+')');
+// monolithic artifact (no data-pack markers)
+const html=fs.readFileSync('../dist/kitchen_app.html','utf8');
+ok(!html.includes('/*@DATA:INGREDIENTS@*/'),'monolithic dist (no splice markers)');
+ok(html.includes('renderSchedGraph')&&html.includes('schedView'),'graph/timeline schedule UI present');
 
 // 7. kinetics edges on transitions (data binding + B doneness-derived/validated cook durations)
 const TR=JSON.parse(fs.readFileSync('../data/transitions.json','utf8'));

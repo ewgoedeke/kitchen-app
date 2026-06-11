@@ -6,70 +6,49 @@ state/process graphs**, and the cooking week is a **resource-constrained schedul
 from which shopping, inventory, waste and nutrition all derive.
 
 The app ships as one deployable HTML file (`dist/kitchen_app.html`) — open it in a
-browser, no build step or network needed at runtime. The catalog, recipes and seed
-data live in **versioned JSON packs** under `data/`, spliced into the HTML by a
-deterministic build script. Edit data → rebuild → test → commit.
+browser, no build step or network needed at runtime.
+
+**Current: v5.1** — full engine with bipartite builder, `scheduleWeek` + prep-ahead
+lifting, Plan analytics (`weekStats`, `bottlenecks`), and Schedule **Graph ↔ Timeline**
+toggle with zoomable swimlane SVG.
 
 ## Layout
 
 ```
-data/        Reusable data packs (the source of truth for content)
-  ingredients.json   One record per item: purchasing, keep model, store/cond,
-                     facets, regulatory-14 allergens, nutrition, volume.
-  transitions.json   Prep classes, coarseness offsets, verb→station bindings,
-                     and the smart-grouping exception ledger.
-  recipes.json       Recipe library (kind:"simple"; kind:"graph" reserved) + plan.
-  seed_state.json    Starting inventory, storage locations, resource pool.
-  kinetics.json      Heat environments, Maillard params, thermal τ (v2.1).
-src/
-  build.py           Splices data/*.json into dist/kitchen_app.html (in place).
-test/
-  test.js            Regression suite: lossless externalization, shopping/schedule
-                     pins, monotone keep-life invariant, allergen rollups.
-  base.html          Reference engine (pre-externalization) for old-vs-new parity.
 dist/
-  kitchen_app.html   The built, deployable artifact. Tracked; tagged per release.
-docs/                Handover prompt, design document.
-.github/workflows/   CI: build + regression suite on every push and PR.
+  kitchen_app.html   The deployable artifact (monolithic v5.1 engine). Tagged per release.
+data/              JSON packs from the v2.x line — retained for future re-externalization
+src/
+  build.py           Splices data packs when markers present; no-op on monolithic dist
+test/
+  test.js            v5.1 regression pins (schedule week 356m, 7 lifts, shopping, analytics)
+  base.html          Frozen v2.0 reference engine (historical)
+docs/                Handover prompt, design document
+.github/workflows/   CI: build + regression suite on every push and PR
 ```
 
 ## Workflow
 
 ```bash
-npm run build     # python3 src/build.py — splice data packs into dist/
-npm test          # node test/test.js  — regression suite (must stay green)
-npm run verify    # build + test in one step
+npm run verify    # build (no-op if monolithic) + regression suite
 ```
 
-CI runs `build` then **fails if the build changes the committed artifact**
-(forcing you to commit a freshly-built `dist/`), then runs the regression suite.
-This enforces the project rule: *never publish the app broken.*
-
-## Build protocol (condensed)
-
-1. Edit `data/*.json` only — never hand-edit `dist/kitchen_app.html` data blocks.
-2. `npm run verify`. If a number legitimately moves, re-pin every affected number
-   in `test/test.js` in the same commit and say so in the message.
-3. Commit. Tag releases `vMAJOR.MINOR.PATCH`.
+Open `dist/kitchen_app.html` in a browser. Schedule tab defaults to **Graph** view;
+toggle **Timeline** for the week-wide Gantt.
 
 ## Versioning
 
-- **App**: semver in `package.json` and the `APP_VERSION` constant. Current: **2.3.0**
-  (kinetics edges on transitions: cook/temper edges carry a kinetics readout — env/τ/T_end/
-  brownedness/doneness — and cook duration is doneness-derived (egg two-zone) or safe-core
-  validated (proteins), driven by `transitions.edge_kinetics` + `cook_doneness`).
-  Minor bump for engine features, patch for data-only re-pins.
-- **Data packs**: each JSON pack carries its own `version` integer, bumped when its
-  schema changes shape — independent of the app version.
+- **App**: semver in `package.json`. Current: **5.1.0** (full engine on main).
+- **Data packs** (`data/`): from v2.2 line; not wired into v5.1 dist yet — re-externalize
+  in a future release.
 
-## Honesty rules (carried from the project)
-regional estimates** — every ingredient record carries `verify:true` until checked
-against a real authority and cited via a `src` field. **Never fabricate keep-lives,
-allergen declarations, IRIs or food-safety thresholds.** Keep-lives are
-food-safety-adjacent: verify with a regional authority before trusting them.
+## Honesty rules
+
+All keep-lives, nutrition, allergens, durations and quantities are **seeded regional
+estimates** — verify with a regional authority before trusting. Never fabricate
+keep-lives, allergen declarations, IRIs or food-safety thresholds.
 
 ## Roadmap
 
-Tracked as issues, lettered A–T (see `docs/handover_prompt.md`). Near-term:
-Sprint 2 (thermal condition + mise en place + timers; wires into kinetics v2.1) and the
-in-app bipartite recipe builder.
+See `docs/handover_prompt.md` and GitHub issues. After v5.1 on main: re-externalize
+data packs without losing engine features; merge v2.2 kinetics (thermalCurve) into v5.1.

@@ -2,8 +2,8 @@
 """Build dist/kitchen_app.html by splicing data/*.json into the carrier HTML.
 
 Run from repo root:  python3 src/build.py
-Data-only iteration: edit data/*.json, rebuild, then `npm test` before committing.
-The engine code in dist/kitchen_app.html is never touched by this script.
+When dist carries /*@DATA:…@*/ markers, packs are spliced in place.
+Monolithic dist (v5.1+) skips splice — edit dist directly until re-externalized.
 """
 import json, os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -16,6 +16,9 @@ PACKS = [("INGREDIENTS","ingredients.json","ING_DATA"),
          ("KINETICS","kinetics.json","KIN_DATA")]
 def main():
     t = open(APP).read()
+    if "/*@DATA:INGREDIENTS@*/" not in t:
+        print("built %s (monolithic, %d bytes)" % (APP, len(t)))
+        return
     for tag, fname, var in PACKS:
         data = open(os.path.join(DATA, fname)).read().strip()
         json.loads(data)  # validate
