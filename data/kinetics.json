@@ -1,6 +1,6 @@
 {
  "schema": "kitchen.kinetics/1",
- "version": 2,
+ "version": 3,
  "updated": "2026-06-11",
  "_note": "Continuous heat + Maillard kinetics primitive (v2.1). Newton lumped-capacitance T(t)=T_env+(T0\u2212T_env)\u00b7e^(\u2212t/\u03c4) with per-ingredient \u03c4 (minutes). Maillard: dB/dt=k(T), k=k0\u00b7e^(\u2212Ea/RT). egg_zones (v2): two-zone white/yolk model for boil doneness. ALL constants seeded estimates \u2014 verify:true until cited via src.",
  "verify": true,
@@ -43,6 +43,24 @@
  },
  "temper_env": "counter",
  "temper_threshold_C": 15,
+ "cool_threshold_C": 8,
+ "container_factors": {
+  "sealed_retail": {
+   "tau_mult": 1.4,
+   "verify": true,
+   "_note": "retail tray/film insulation (seeded)"
+  },
+  "vacuum_protein": {
+   "tau_mult": 1.8,
+   "verify": true,
+   "_note": "vac-packed protein block (seeded)"
+  },
+  "open_lot": {
+   "tau_mult": 1.0,
+   "verify": true,
+   "_note": "opened lot, no extra insulation (seeded)"
+  }
+ },
  "start_temp_C": {
   "fridge": 4,
   "room": 21,

@@ -87,7 +87,8 @@
   "hob": 2,
   "oven": 1,
   "sink": 1,
-  "board": 1
+  "board": 1,
+  "counter": 4
  },
  "perish": 30
 }

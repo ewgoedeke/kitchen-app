@@ -68,7 +68,7 @@ tr.risk td{background:var(--warn-bg)}
 .track{position:relative;height:20px;background:var(--cream);border-radius:5px;flex:none;min-width:60px}
 .blk{position:absolute;top:1px;height:18px;border-radius:4px;overflow:hidden;display:flex;align-items:center;padding:0 4px;box-shadow:0 1px 0 rgba(0,0,0,.12)}
 .blk span{font-family:'Spline Sans Mono',monospace;font-size:8.5px;color:#fff;white-space:nowrap}
-</style></head><body><div class="wrap"><header class="top"><div><div class="brand">Martin <span class="amp">&amp;</span> Co.</div><div class="tag">One model end to end — build recipes, plan the week, run a resource-constrained cook schedule, inspect ingredient transitions, keep a lot-based inventory with storage capacity, drive a shopping list, track waste, and tally nutrition.</div></div><div class="pill">integrated prototype · v2.1 · kinetics</div></header><div id="nav"></div><div id="main"></div><div class="foot">Single shared engine: catalog with quantity profiles, keep-life (prep + opened clocks), prep-class affordances incl. deskin, cook method/crust, recipe synthesis, lot inventory with litre-capacity, plan-driven shopping with best-fit packs and leftover routing, waste, and macro nutrition. Quantities, pack sizes, volumes, keep-lives and macros are seeded regional estimates — calibrate before trusting; keep-lives are food-safety-adjacent, verify with a regional authority.</div></div><script>
+</style></head><body><div class="wrap"><header class="top"><div><div class="brand">Martin <span class="amp">&amp;</span> Co.</div><div class="tag">One model end to end — build recipes, plan the week, run a resource-constrained cook schedule, inspect ingredient transitions, keep a lot-based inventory with storage capacity, drive a shopping list, track waste, and tally nutrition.</div></div><div class="pill">integrated prototype · v2.2 · thermal conditioning</div></header><div id="nav"></div><div id="main"></div><div class="foot">Single shared engine: catalog with quantity profiles, keep-life (prep + opened clocks), prep-class affordances incl. deskin, cook method/crust, recipe synthesis, lot inventory with litre-capacity, plan-driven shopping with best-fit packs and leftover routing, waste, and macro nutrition. Quantities, pack sizes, volumes, keep-lives and macros are seeded regional estimates — calibrate before trusting; keep-lives are food-safety-adjacent, verify with a regional authority.</div></div><script>
 /* UNIFIED kitchen engine — catalog, keep-life, quantity, recipes, inventory, shopping,
    cook method/crust, storage capacity, schedule, waste, nutrition, transitions. */
 /*@DATA:INGREDIENTS@*/const ING_DATA={
@@ -784,7 +784,9 @@ tr.risk td{background:var(--warn-bg)}
   "grind": "board",
   "deskin": "board",
   "juice": "board",
-  "crumble": "board"
+  "crumble": "board",
+  "temper": "counter",
+  "cool": "counter"
  },
  "cook_browns": {
   "dry": 1,
@@ -1188,13 +1190,14 @@ tr.risk td{background:var(--warn-bg)}
   "hob": 2,
   "oven": 1,
   "sink": 1,
-  "board": 1
+  "board": 1,
+  "counter": 4
  },
  "perish": 30
 };/*@END:SEED@*/
 /*@DATA:KINETICS@*/const KIN_DATA={
  "schema": "kitchen.kinetics/1",
- "version": 2,
+ "version": 3,
  "updated": "2026-06-11",
  "_note": "Continuous heat + Maillard kinetics primitive (v2.1). Newton lumped-capacitance T(t)=T_env+(T0\u2212T_env)\u00b7e^(\u2212t/\u03c4) with per-ingredient \u03c4 (minutes). Maillard: dB/dt=k(T), k=k0\u00b7e^(\u2212Ea/RT). egg_zones (v2): two-zone white/yolk model for boil doneness. ALL constants seeded estimates \u2014 verify:true until cited via src.",
  "verify": true,
@@ -1237,6 +1240,24 @@ tr.risk td{background:var(--warn-bg)}
  },
  "temper_env": "counter",
  "temper_threshold_C": 15,
+ "cool_threshold_C": 8,
+ "container_factors": {
+  "sealed_retail": {
+   "tau_mult": 1.4,
+   "verify": true,
+   "_note": "retail tray/film insulation (seeded)"
+  },
+  "vacuum_protein": {
+   "tau_mult": 1.8,
+   "verify": true,
+   "_note": "vac-packed protein block (seeded)"
+  },
+  "open_lot": {
+   "tau_mult": 1.0,
+   "verify": true,
+   "_note": "opened lot, no extra insulation (seeded)"
+  }
+ },
  "start_temp_C": {
   "fridge": 4,
   "room": 21,
@@ -1284,7 +1305,7 @@ tr.risk td{background:var(--warn-bg)}
  }
 };/*@END:KINETICS@*/
 const KD=(()=>{const catalog={},nutr={},vol={};for(const k in ING_DATA.items){const r=ING_DATA.items[k];const c={};for(const f in r){if(f==="nutrition"||f==="vol"||f==="verify"||f==="allergen_note")continue;c[f]=r[f];}catalog[k]=c;if(r.nutrition)nutr[k]=r.nutrition;if(r.vol!=null)vol[k]=r.vol;}return{catalog,nutr,vol,trans:TRANS_DATA,library:REC_DATA.library,plan:REC_DATA.plan,inventory:SEED_DATA.inventory,seed:SEED_DATA,kin:KIN_DATA};})();
-const APP_VERSION="2.1.0";
+const APP_VERSION="2.2.0";
 function recipeAllergens(r){const s={};(r.ingredients||[]).forEach(it=>{(CATALOG[it.k].allergens||[]).forEach(a=>s[a]=1);});return Object.keys(s).sort();}
 const CATALOG=KD.catalog;
 const PREP_CLASS=KD.trans.prep_classes;
@@ -1310,14 +1331,22 @@ function tempAt(t,T0,Tenv,tau){return Tenv+(T0-Tenv)*Math.exp(-t/tau);}
 function arrheniusK(T_C){const M=KIN.maillard;if(T_C<M.browning_onset_C)return 0;const Tk=T_C+273.15,Tref=M.T_ref_C+273.15;return M.k0_per_min*Math.exp(-M.Ea_J_per_mol/(R_GAS)*(1/Tk-1/Tref));}
 function integrateBrown(T0,Tenv,tau,tEnd){let B=0,prevK=arrheniusK(tempAt(0,T0,Tenv,tau));for(let t=1;t<=tEnd;t++){const k=arrheniusK(tempAt(t,T0,Tenv,tau));B+=(prevK+k)/2;prevK=k;}return Math.min(1,B);}
 function brownLabel(b){return b<0.2?"pale":b<0.7?"golden":"seared";}
-function temperMinutes(k){const tau=ingTau(k),T0=KIN.start_temp_C.fridge,Tenv=kinEnv(KIN.temper_env),Th=KIN.temper_threshold_C;if(Tenv<=T0||Th<=T0||Th>=Tenv)return null;const r=(Th-Tenv)/(T0-Tenv);if(r<=0||r>=1)return null;return-Math.log(r)*tau;}
+function lotContainerKey(lot,k){k=k||(lot&&lot.k);if(lot&&lot.opened!=null)return"open_lot";const I=k&&CATALOG[k];if(I&&I.group==="protein"&&isPackaged(k))return"vacuum_protein";return"sealed_retail";}
+function containerTauMult(lot,k){const cf=KIN.container_factors;if(!cf)return 1;const key=lotContainerKey(lot,k);return(cf[key]&&cf[key].tau_mult)||1;}
+function lotStartTemp(lot){return(lot&&lot.opened!=null)?KIN.start_temp_C.room:KIN.start_temp_C.fridge;}
+function lotThermalOpts(lot,k){return{T0:lotStartTemp(lot),tauMult:containerTauMult(lot,k)};}
+function effTau(k,opts){opts=opts||{};return ingTau(k)*(opts.tauMult!=null?opts.tauMult:1);}
+function temperMinutes(k,opts){opts=opts||{};const tau=effTau(k,opts),T0=opts.T0!=null?opts.T0:KIN.start_temp_C.fridge,Tenv=kinEnv(KIN.temper_env),Th=KIN.temper_threshold_C;if(Tenv<=T0||Th<=T0||Th>=Tenv)return null;const r=(Th-Tenv)/(T0-Tenv);if(r<=0||r>=1)return null;return-Math.log(r)*tau;}
+function coolMinutes(k,T0,opts){opts=opts||{};if(T0==null)return null;const tau=effTau(k,opts),Tenv=kinEnv("fridge"),Th=KIN.cool_threshold_C||8;if(T0<=Th)return 0;const r=(Th-Tenv)/(T0-Tenv);if(r<=0||r>=1)return null;return-Math.log(r)*tau;}
 function eggDoneness(method,t,opts){const ez=KIN.egg_zones;if(!ez)return null;opts=opts||{};const T0=opts.T0!=null?opts.T0:(opts.startFrom==="room"?KIN.start_temp_C.room:KIN.start_temp_C.fridge),Tenv=kinEnv(opts.env?opts.env:methodHeatEnv(method)),Tw=tempAt(t,T0,Tenv,ez.white.tau_min),Ty=tempAt(t,T0,Tenv,ez.yolk.tau_min),Th=ez.yolk.thresholds_C,white=Tw>=ez.white.set_C?"set":"liquid",yolk=Ty<Th.jammy?"runny":Ty<Th.medium?"jammy":Ty<Th.hard?"medium":"hard",overall=yolk==="hard"?"hard-boiled":yolk==="medium"?"medium-boiled":yolk==="jammy"?"soft-boiled (jammy)":"very soft";return{T_white:+Tw.toFixed(1),T_yolk:+Ty.toFixed(1),white,yolk,overall};}
 function eggZoneSamples(method,dur,n,opts){const ez=KIN.egg_zones;if(!ez)return[];n=n||Math.max(2,Math.min(120,dur));opts=opts||{};const pts=[];for(let i=0;i<=n;i++){const t=dur*i/n,dn=eggDoneness(method,t,opts);pts.push({t:+t.toFixed(1),T_white:dn.T_white,T_yolk:dn.T_yolk});}return pts;}
-function thermalCurve(k,method,t,opts){opts=opts||{};const tau=ingTau(k),envKey=opts.env||methodHeatEnv(method),Tenv=kinEnv(envKey),T0=opts.T0!=null?opts.T0:(opts.startFrom==="room"?KIN.start_temp_C.room:KIN.start_temp_C.fridge),T=tempAt(t,T0,Tenv,tau),browns=!!COOK_BROWNS[method],brownedness=browns?integrateBrown(T0,Tenv,tau,t):0;const out={T:+T.toFixed(1),brownedness:+brownedness.toFixed(3),brownLabel:brownLabel(brownedness),tau,T_env:Tenv,T0,method,env:envKey};if(k==="egg"&&method==="moist"&&KIN.egg_zones){const dn=eggDoneness(method,t,opts);if(dn)out.doneness=dn;}return out;}
+function thermalCurve(k,method,t,opts){opts=opts||{};const tau=effTau(k,opts),envKey=opts.env||methodHeatEnv(method),Tenv=kinEnv(envKey),T0=opts.T0!=null?opts.T0:(opts.startFrom==="room"?KIN.start_temp_C.room:KIN.start_temp_C.fridge),T=tempAt(t,T0,Tenv,tau),browns=!!COOK_BROWNS[method],brownedness=browns?integrateBrown(T0,Tenv,tau,t):0;const out={T:+T.toFixed(1),brownedness:+brownedness.toFixed(3),brownLabel:brownLabel(brownedness),tau,T_env:Tenv,T0,method,env:envKey,tauMult:opts.tauMult||1};if(k==="egg"&&method==="moist"&&KIN.egg_zones){const dn=eggDoneness(method,t,opts);if(dn)out.doneness=dn;}return out;}
 function thermalSamples(k,method,dur,n){n=n||Math.max(2,Math.min(120,dur));const pts=[];for(let i=0;i<=n;i++){const t=dur*i/n;pts.push({t:+t.toFixed(1),...thermalCurve(k,method,t)});}return pts;}
-function renderKinCurve(k,method,dur){const cap=el("div","kcurve"),W=300,H=54,pad=4,svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.setAttribute("role","img");const addPath=(pts,key,col,Tmax)=>{const d=pts.map((p,i)=>{const x=pad+(W-2*pad)*(p.t/dur),y=H-6-(H-12)*(p[key]/Tmax);return (i?"L":"M")+x.toFixed(1)+","+y.toFixed(1);}).join(" ");const pe=document.createElementNS("http://www.w3.org/2000/svg","path");pe.setAttribute("d",d);pe.setAttribute("fill","none");pe.setAttribute("stroke",col);pe.setAttribute("stroke-width","1.8");svg.appendChild(pe);};if(k==="egg"&&method==="moist"&&KIN.egg_zones){const pts=eggZoneSamples(method,dur,Math.min(60,dur),{startFrom:"fridge"}),Tmax=100;addPath(pts,"T_white","var(--rust)",Tmax);addPath(pts,"T_yolk","var(--plum)",Tmax);const dn=eggDoneness(method,dur,{startFrom:"fridge"});cap.appendChild(svg);cap.appendChild(el("div","kl","<b>"+CATALOG[k].name+"</b> · simmer · white <span class=\"mono\">"+dn.T_white+"°C</span> · yolk <span class=\"mono\">"+dn.T_yolk+"°C</span> · <b>"+dn.overall+"</b> <span class=\"mu\">(seeded two-zone, verify)</span>"));return cap;}const pts=thermalSamples(k,method,dur,Math.min(60,dur)),Tmax=Math.max(...pts.map(p=>p.T),KIN.maillard.browning_onset_C+10);addPath(pts,"T","var(--rust)",Tmax);if(COOK_BROWNS[method])addPath(pts,"brownedness","var(--butter)",1);const end=thermalCurve(k,method,dur);cap.appendChild(svg);cap.appendChild(el("div","kl","<b>"+CATALOG[k].name+"</b> · "+method+" · τ="+end.tau+"m · T<sub>end</sub>="+end.T+"°C"+(COOK_BROWNS[method]?" · brown="+end.brownLabel+" ("+end.brownedness+")":"")+" <span class=\"mu\">(seeded kinetics, verify)</span>"));return cap;}
+function renderKinCurve(k,method,dur,lotOpts){lotOpts=lotOpts||{};const cap=el("div","kcurve"),W=300,H=54,pad=4,svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.setAttribute("role","img");const addPath=(pts,key,col,Tmax)=>{const d=pts.map((p,i)=>{const x=pad+(W-2*pad)*(p.t/dur),y=H-6-(H-12)*(p[key]/Tmax);return (i?"L":"M")+x.toFixed(1)+","+y.toFixed(1);}).join(" ");const pe=document.createElementNS("http://www.w3.org/2000/svg","path");pe.setAttribute("d",d);pe.setAttribute("fill","none");pe.setAttribute("stroke",col);pe.setAttribute("stroke-width","1.8");svg.appendChild(pe);};if(k==="egg"&&method==="moist"&&KIN.egg_zones){const pts=eggZoneSamples(method,dur,Math.min(60,dur),{startFrom:"fridge"}),Tmax=100;addPath(pts,"T_white","var(--rust)",Tmax);addPath(pts,"T_yolk","var(--plum)",Tmax);const dn=eggDoneness(method,dur,{startFrom:"fridge"});cap.appendChild(svg);cap.appendChild(el("div","kl","<b>"+CATALOG[k].name+"</b> · simmer · white <span class=\"mono\">"+dn.T_white+"°C</span> · yolk <span class=\"mono\">"+dn.T_yolk+"°C</span> · <b>"+dn.overall+"</b> <span class=\"mu\">(seeded two-zone, verify)</span>"));return cap;}const kinOpts=Object.assign({startFrom:lotOpts.T0!=null?"custom":"fridge"},lotOpts),pts=[];for(let i=0;i<=Math.min(60,dur);i++){const t=dur*i/Math.min(60,dur);pts.push({t:+t.toFixed(1),...thermalCurve(k,method,t,kinOpts)});}const Tmax=Math.max(...pts.map(p=>p.T),KIN.maillard.browning_onset_C+10);addPath(pts,"T","var(--rust)",Tmax);if(COOK_BROWNS[method])addPath(pts,"brownedness","var(--butter)",1);const end=thermalCurve(k,method,dur,kinOpts),cont=lotContainerKey(null,k);cap.appendChild(svg);cap.appendChild(el("div","kl","<b>"+CATALOG[k].name+"</b> · "+method+" · τ="+end.tau+"m"+(end.tauMult>1?" (×"+end.tauMult+" "+cont.replace(/_/g," ")+")":"")+" · T<sub>end</sub>="+end.T+"°C"+(COOK_BROWNS[method]?" · brown="+end.brownLabel+" ("+end.brownedness+")":"")+" <span class=\"mu\">(seeded kinetics, verify)</span>"));return cap;}
 const cookOutcome=m=>{const browns=!!COOK_BROWNS[m];return{method:m||"moist",browns,crust:browns?"browned":"none"};};
-function recipeGraph(recipe){_uid=0;const g={states:{},procs:[]},roots=[];recipe.ingredients.forEach(it=>{const s=synthPrep(it.k,it.form||"whole");Object.keys(s.states).forEach(id=>{if(!g.states[id])g.states[id]=s.states[id];});s.procs.forEach(p=>g.procs.push(p));roots.push(s.root);});const out=recipe.id;g.states[out]={kind:"cooked",keep:recipe.keep||3,name:recipe.name};const o=cookOutcome(recipe.method);g.procs.push({id:uid("cook"),title:"Cook & plate · "+recipe.name+" · "+o.method+(o.browns?" (browns → crust)":" (no browning)"),trans:"cook",active:1,dur:recipe.cookMin||20,consumes:roots,produces:[out],waste:[],method:o.method,browns:o.browns,crust:o.crust});return g;}
+function injectTemper(k,root,states,procs,lot){const I=CATALOG[k];if(!I.temperMin)return root;const opts=lotThermalOpts(lot,k),tm=temperMinutes(k,opts),dur=Math.ceil(tm!=null?tm:I.temperMin),id=k+"_tempered";states[id]={kind:"prep",keep:I.keep,leaf:k,form:"tempered"};const pulse=dur>=10?{every:Math.min(10,Math.max(5,Math.floor(dur/3))),note:"rotate pack"}:null;procs.push({id:uid("temper"),title:"Temper "+I.name+" on counter",trans:"temper",active:0,dur,pulse,consumes:[root],produces:[id],waste:[]});return id;}
+function miseGroups(recipe){const g=recipeGraph(recipe),by={};g.procs.forEach(p=>{if(p.trans==="cook"||p.trans==="temper"||p.trans==="cool")return;const leaf=p.consumes.concat(p.produces).map(id=>g.states[id]&&g.states[id].leaf).find(Boolean);if(!leaf)return;const st=CATALOG[leaf].store||defaultLoc(leaf);by[st]=by[st]||[];by[st].push(p.title);});return by;}
+function recipeGraph(recipe){_uid=0;const g={states:{},procs:[]},roots=[];recipe.ingredients.forEach(it=>{const s=synthPrep(it.k,it.form||"whole");Object.keys(s.states).forEach(id=>{if(!g.states[id])g.states[id]=s.states[id];});s.procs.forEach(p=>g.procs.push(p));roots.push(injectTemper(it.k,s.root,g.states,g.procs,null));});const out=recipe.id;g.states[out]={kind:"cooked",keep:recipe.keep||3,name:recipe.name};const o=cookOutcome(recipe.method);g.procs.push({id:uid("cook"),title:"Cook & plate · "+recipe.name+" · "+o.method+(o.browns?" (browns → crust)":" (no browning)"),trans:"cook",active:1,dur:recipe.cookMin||20,consumes:roots,produces:[out],waste:[],method:o.method,browns:o.browns,crust:o.crust});return g;}
 function topoSteps(g){const av={},out=[],rest=g.procs.slice();Object.keys(g.states).forEach(s=>{if(g.states[s].kind==="leaf")av[s]=1;});let gd=0;while(rest.length&&gd++<999){let mv=0;for(let i=0;i<rest.length;i++){if(rest[i].consumes.every(c=>av[c])){const p=rest.splice(i,1)[0];out.push(p);p.produces.forEach(o=>av[o]=1);mv=1;break;}}if(!mv){out.push(...rest);break;}}return out;}
 function keepFor(l){const I=CATALOG[l.k];return(l.opened!=null&&I.openedKeep!=null)?I.openedKeep:I.keep;}
 function effExpiry(l){const b=(l.opened!=null?l.opened:l.bought);return Math.min(l.sellBy!=null?l.sellBy:Infinity,b+keepFor(l));}
@@ -1356,13 +1385,13 @@ const PREPPABLE=Object.keys(CATALOG).filter(k=>prepClassOf(k));
 // resource capacities are the algorithmic inputs
 const DEFAULT_RES=KD.seed.resources;
 const RES_MAP=KD.trans.res_map;
-function stepResource(p,recipe){if(p.trans==="cook")return (recipe.method==="dry")?"oven":"hob";return RES_MAP[p.trans]||"board";}
-function stepAttend(p,recipe){if(p.trans==="cook")return recipe.method==="fat";return true;} // prep attended; fry attended; roast/simmer passive
+function stepResource(p,recipe){if(p.trans==="temper"||p.trans==="cool")return RES_MAP[p.trans]||"counter";if(p.trans==="cook")return (recipe.method==="dry")?"oven":"hob";return RES_MAP[p.trans]||"board";}
+function stepAttend(p,recipe){if(p.trans==="temper"||p.trans==="cool")return false;if(p.trans==="cook")return recipe.method==="fat";return true;}
 function recipeSteps(recipe){const g=recipeGraph(recipe),procs=g.procs,prodBy={};procs.forEach(p=>p.produces.forEach(s=>prodBy[s]=p.id));
   return procs.map(p=>({id:recipe.id+":"+p.id,recipe:recipe.id,rname:recipe.name,title:p.title,trans:p.trans,dur:p.dur,res:stepResource(p,recipe),attend:stepAttend(p,recipe),deps:p.consumes.map(c=>prodBy[c]).filter(Boolean).map(x=>recipe.id+":"+x)}));}
 function schedule(steps,res){res=Object.assign({},DEFAULT_RES,res||{});
   const start={},finish={},busy={};Object.keys(res).forEach(r=>busy[r]=[]);
-  const needs=s=>{const l=[s.res];if(s.attend)l.push("operator");return l;};
+  const needs=s=>{const l=[];if(s.res!=null&&res[s.res]!=null)l.push(s.res);if(s.attend)l.push("operator");return l;};
   const freeAt=(r,t,dur)=>{let c=[t];busy[r].forEach(iv=>{if(iv[1]>t)c.push(iv[1]);});c=[...new Set(c)].sort((a,b)=>a-b);
     for(const x of c){const ov=busy[r].filter(iv=>iv[0]<x+dur&&iv[1]>x).length;if(ov<res[r])return x;}return c[c.length-1];};
   const earliest=(s,ready)=>{let t=ready;for(let i=0;i<500;i++){let ok=true,push=t;needs(s).forEach(r=>{const f=freeAt(r,t,s.dur);if(f>t){ok=false;push=Math.max(push,f);}});if(ok)return t;t=push;}return t;};
@@ -1386,7 +1415,7 @@ const LIBRARY=KD.library;
 const PLAN=KD.plan;
 const INVENTORY=KD.inventory;
 const state={view:"plan",lib:JSON.parse(JSON.stringify(LIBRARY)),plan:JSON.parse(JSON.stringify(PLAN)),inv:JSON.parse(JSON.stringify(INVENTORY)),
-  build:{name:"",keep:3,cookMin:25,method:"fat",ingredients:[]},transKind:"carrot",res:{operator:1,hob:2,oven:1,sink:1,board:1},nextLot:100,nextRid:1};
+  build:{name:"",keep:3,cookMin:25,method:"fat",ingredients:[]},transKind:"carrot",res:{operator:1,hob:2,oven:1,sink:1,board:1,counter:4},nextLot:100,nextRid:1};
 const DAYS=["·","Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const dfmt=d=>d===Infinity||d==null?"—":d<0?(-d)+"d ago":d===0?"today":"in "+d+"d";
@@ -1420,7 +1449,8 @@ function vBuild(m){m.appendChild(el('div','hint','Build from scratch: add ingred
 function vCook(m){m.appendChild(el('div','hint','The week\'s cooking, ordered by day — each dish\'s synthesised steps, hands-on vs passive minutes, browning method, and a seeded heat/brown curve for the cook step (lumped-capacitance T(t) + Arrhenius Maillard).'));
   const cs=cookSchedule(state.plan,state.lib);if(!cs.length){m.appendChild(el('div','hint','Nothing planned.'));return;}
   cs.forEach(d=>{const r=state.lib[d.recipeId];const box=el('div','rec');box.innerHTML='<h3>'+DAYS[d.day]+' · '+d.name+' <span class="v">'+d.hands+'m hands-on · '+d.passive+'m passive</span></h3>';
-    d.steps.forEach((p,i)=>{const w=p.waste&&p.waste.length?' <span class="wst">waste·'+p.waste.join(', ')+'</span>':'';let cr=p.crust?' <span class="badge '+(p.browns?'pack':'fresh')+'">crust: '+p.crust+'</span>':'';if(p.trans==='cook'&&r&&r.method==='moist'&&(r.ingredients||[]).some(it=>it.k==='egg')){const dn=eggDoneness('moist',p.dur,{startFrom:'fridge'});if(dn)cr+=' <span class="badge pack">'+dn.overall+'</span>';}box.appendChild(el('div','step','<span class="n">'+(i+1)+'</span><span><b>'+p.title+'</b> <span class="mu mono">'+(p.active?'hands-on':'passive')+'·'+p.dur+'m'+w+'</span>'+cr+'</span>'));if(p.trans==='cook'&&r){const rep=(r.ingredients||[]).some(it=>it.k==='egg')?'egg':((r.ingredients||[]).map(it=>it.k).sort((a,b)=>ingTau(b)-ingTau(a))[0]||'beef_mince');box.appendChild(renderKinCurve(rep,r.method||'moist',p.dur||20));}});
+    if(r){const mg=miseGroups(r);const mk=Object.keys(mg);if(mk.length)box.appendChild(el('div','flow','<b>Mise by store:</b> '+mk.map(s=>s+' ('+mg[s].length+' prep)').join(' · ')));}
+    d.steps.forEach((p,i)=>{const w=p.waste&&p.waste.length?' <span class="wst">waste·'+p.waste.join(', ')+'</span>':'';const pl=p.pulse?' <span class="badge fresh">pulse ·'+p.pulse.every+'m</span>':'';let cr=p.crust?' <span class="badge '+(p.browns?'pack':'fresh')+'">crust: '+p.crust+'</span>':'';if(p.trans==='cook'&&r&&r.method==='moist'&&(r.ingredients||[]).some(it=>it.k==='egg')){const dn=eggDoneness('moist',p.dur,{startFrom:'fridge'});if(dn)cr+=' <span class="badge pack">'+dn.overall+'</span>';}box.appendChild(el('div','step','<span class="n">'+(i+1)+'</span><span><b>'+p.title+'</b> <span class="mu mono">'+(p.active?'hands-on':'passive')+'·'+p.dur+'m'+w+'</span>'+pl+cr+'</span>'));if(p.trans==='cook'&&r){const rep=(r.ingredients||[]).some(it=>it.k==='egg')?'egg':((r.ingredients||[]).map(it=>it.k).sort((a,b)=>ingTau(b)-ingTau(a))[0]||'beef_mince');box.appendChild(renderKinCurve(rep,r.method||'moist',p.dur||20,lotThermalOpts(null,rep)));}});
     m.appendChild(box);});}
 
 function vTrans(m){m.appendChild(el('div','hint','Which transitions an ingredient admits, computed from its prep-class — peel vs deskin, cuttable forms, grind/juice, and the cook method that browns it. Pick a kind:'));

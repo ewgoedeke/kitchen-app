@@ -100,7 +100,9 @@
   "grind": "board",
   "deskin": "board",
   "juice": "board",
-  "crumble": "board"
+  "crumble": "board",
+  "temper": "counter",
+  "cool": "counter"
  },
  "cook_browns": {
   "dry": 1,

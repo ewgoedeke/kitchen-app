@@ -54,8 +54,8 @@ This enforces the project rule: *never publish the app broken.*
 
 ## Versioning
 
-- **App**: semver in `package.json` and the `APP_VERSION` constant. Current: **2.1.0**
-  (kinetics primitive: `thermalCurve`, `data/kinetics.json`).
+- **App**: semver in `package.json` and the `APP_VERSION` constant. Current: **2.2.0**
+  (thermal conditioning: container-aware kinetics, counter temper steps, mise-by-store hints).
   Minor bump for engine features, patch for data-only re-pins.
 - **Data packs**: each JSON pack carries its own `version` integer, bumped when its
   schema changes shape — independent of the app version.

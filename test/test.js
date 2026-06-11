@@ -5,7 +5,7 @@ function engine(file, fromMarker){
   if(a<0||b<0||b<=a) throw new Error('slice fail '+file);
   const code=t.slice(a,b);
   const m={exports:{}};
-  new Function('module',code+';module.exports={CATALOG,PREP_CLASS,COARSE,NUTR,VOL,LOCATIONS,DEFAULT_RES,RES_MAP,COOK_BROWNS,LIBRARY,PLAN,INVENTORY,PERISH,shoppingList,cookSchedule,planNutrition,fitsCheck,buysFromShopping,transitionsFor,PREPPABLE,offeredForms,stateKeep,recipeGraph,topoSteps,exportRecipe,typeofRA:typeof recipeAllergens==="function"?recipeAllergens:null,typeofTC:typeof thermalCurve==="function"?thermalCurve:null,typeofTM:typeof temperMinutes==="function"?temperMinutes:null,typeofED:typeof eggDoneness==="function"?eggDoneness:null,typeofIT:typeof ingTau==="function"?ingTau:null,KIN:typeof KD!=="undefined"?KD.kin:null};')(m);
+  new Function('module',code+';module.exports={CATALOG,PREP_CLASS,COARSE,NUTR,VOL,LOCATIONS,DEFAULT_RES,RES_MAP,COOK_BROWNS,LIBRARY,PLAN,INVENTORY,PERISH,shoppingList,cookSchedule,planNutrition,fitsCheck,buysFromShopping,transitionsFor,PREPPABLE,offeredForms,stateKeep,recipeGraph,topoSteps,exportRecipe,typeofRA:typeof recipeAllergens==="function"?recipeAllergens:null,typeofMG:typeof miseGroups==="function"?miseGroups:null,typeofTC:typeof thermalCurve==="function"?thermalCurve:null,typeofTM:typeof temperMinutes==="function"?temperMinutes:null,typeofED:typeof eggDoneness==="function"?eggDoneness:null,typeofIT:typeof ingTau==="function"?ingTau:null,typeofLT:typeof lotThermalOpts==="function"?lotThermalOpts:null,typeofCM:typeof containerTauMult==="function"?containerTauMult:null,typeofCD:typeof coolMinutes==="function"?coolMinutes:null,KIN:typeof KD!=="undefined"?KD.kin:null};')(m);
   return m.exports;
 }
 const J=s=>JSON.stringify(s);
@@ -17,8 +17,11 @@ let F=0; const ok=(c,msg)=>{console.log((c?'PASS':'FAIL')+' '+msg); if(!c)F=1;};
 let loss=[];
 for(const k in O.CATALOG){for(const f in O.CATALOG[k]){if(J(O.CATALOG[k][f])!==J(N.CATALOG[k][f]))loss.push(k+'.'+f);}}
 ok(loss.length===0,'catalog field-subset lossless ('+loss.join(',')+')');
-for(const [nm] of [['PREP_CLASS'],['COARSE'],['NUTR'],['VOL'],['LOCATIONS'],['DEFAULT_RES'],['RES_MAP'],['COOK_BROWNS'],['PLAN'],['INVENTORY']])
+for(const [nm] of [['PREP_CLASS'],['COARSE'],['NUTR'],['VOL'],['COOK_BROWNS'],['PLAN'],['INVENTORY']])
   ok(J(O[nm])===J(N[nm]), nm+' identical');
+ok(J(O.LOCATIONS)===J(N.LOCATIONS),'LOCATIONS identical');
+ok(N.DEFAULT_RES.counter===4,'counter resource in seed');
+ok(N.RES_MAP.temper==='counter'&&N.RES_MAP.cool==='counter','res_map temper/cool → counter');
 ok(O.PERISH===N.PERISH,'PERISH identical');
 // library: identical modulo added kind:"simple"
 let libok=true;
@@ -27,8 +30,9 @@ ok(libok,'library identical modulo kind:"simple"');
 
 // 2. engine output regression old vs new
 ok(J(O.shoppingList(O.PLAN,O.INVENTORY,O.LIBRARY))===J(N.shoppingList(N.PLAN,N.INVENTORY,N.LIBRARY)),'shoppingList identical');
-const cs=o=>o.cookSchedule(o.PLAN,o.LIBRARY).map(d=>({day:d.day,name:d.name,hands:d.hands,passive:d.passive,n:d.steps.length}));
-ok(J(cs(O))===J(cs(N)),'cookSchedule identical');
+const cs=o=>o.cookSchedule(o.PLAN,o.LIBRARY).map(d=>({day:d.day,recipeId:d.recipeId,hands:d.hands,passive:d.passive,n:d.steps.length}));
+const CS_PIN=[{day:1,recipeId:'bolognese',hands:58,passive:55,n:13},{day:2,recipeId:'boiled_egg',hands:7,passive:7,n:2},{day:3,recipeId:'chicken_roast',hands:95,passive:0,n:13},{day:4,recipeId:'chicken_hash',hands:30,passive:0,n:7},{day:6,recipeId:'boerewors_pap',hands:40,passive:0,n:4}];
+ok(J(cs(N))===J(CS_PIN),'cookSchedule pinned (v2.2 temper steps)');
 ok(J(O.planNutrition(O.PLAN,O.LIBRARY))===J(N.planNutrition(N.PLAN,N.LIBRARY)),'planNutrition identical');
 const fc=o=>o.fitsCheck(o.INVENTORY,o.buysFromShopping(o.shoppingList(o.PLAN,o.INVENTORY,o.LIBRARY)));
 ok(J(fc(O))===J(fc(N)),'fitsCheck identical');
@@ -60,7 +64,8 @@ for(const tag of ['INGREDIENTS','TRANSITIONS','RECIPES','SEED','KINETICS'])
 // 6. kinetics primitive (v2.1)
 ok(!!N.typeofTC,'thermalCurve exists');
 ok(!!N.typeofTM,'temperMinutes exists');
-ok(N.KIN && N.KIN.schema==='kitchen.kinetics/1' && N.KIN.version>=2,'kinetics pack loaded (egg_zones)');
+ok(N.KIN && N.KIN.schema==='kitchen.kinetics/1' && N.KIN.version>=3,'kinetics pack loaded (container_factors)');
+ok(N.KIN.container_factors&&N.KIN.container_factors.sealed_retail.tau_mult===1.4,'container_factors sealed_retail');
 const tc=N.typeofTC;
 const c0=tc('beef_mince','fat',0,{startFrom:'room'});
 ok(Math.abs(c0.T-21)<0.1,'thermalCurve t=0 → room T0 ('+c0.T+')');
@@ -69,7 +74,11 @@ ok(Math.abs(cEnd.T-180)<1,'thermalCurve long t → pan T_env ('+cEnd.T+')');
 ok(tc('beef_mince','moist',40).brownedness===0,'moist method → zero brownedness');
 ok(tc('onion','fat',40,{startFrom:'room'}).brownedness>0.05,'fat method → positive brownedness at 40m ('+tc('onion','fat',40,{startFrom:'room'}).brownedness+')');
 const tm=N.typeofTM('beef_mince');
-ok(tm!=null&&Math.abs(tm-30)<=3,'beef_mince temperMinutes ≈ catalog temperMin 30 (got '+tm+')');
+ok(tm!=null&&Math.abs(tm-30)<=3,'beef_mince temperMinutes (open τ) ≈ 30 (got '+tm+')');
+const tmS=N.typeofTM('beef_mince',N.typeofLT(null,'beef_mince'));
+ok(tmS>tm&&N.typeofCM(null,'beef_mince')===1.8,'sealed vacuum_protein τ_mult slows temper (got '+tmS+')');
+const tcS=N.typeofTC('beef_mince','fat',30,N.typeofLT(null,'beef_mince'));
+ok(tcS.tauMult===1.8&&tcS.tau>50,'thermalCurve lot-aware τ for sealed beef_mince');
 // boiled-egg physics demo (moist bath, two-zone doneness)
 const ed=N.typeofED;
 ok(!!ed,'eggDoneness exists');
@@ -82,5 +91,11 @@ ok(J(RA(N.LIBRARY.boiled_egg))===J(['eggs']),'boiled egg allergens = eggs');
 // cool-down reuses same curve (counter env)
 const cool=tc('beef_mince','fat',20,{env:'counter',T0:80,startFrom:'room'});
 ok(cool.T<80&&cool.T>21,'counter cool-down: T drops from 80 toward ambient ('+cool.T+')');
+// Sprint 2 A: temper steps in recipe graph
+const bg=N.recipeGraph(N.LIBRARY.bolognese),tp=bg.procs.filter(p=>p.trans==='temper');
+ok(tp.length===1&&tp[0].dur>=50&&tp[0].pulse,'bolognese injects sealed-beef temper step ('+tp[0].dur+'m)');
+ok(!!N.typeofMG&&Object.keys(N.typeofMG(N.LIBRARY.bolognese)).length>=2,'miseGroups by store (item B hint)');
+const cd=N.typeofCD('beef_mince',80,{tauMult:1.8});
+ok(cd!=null&&cd>0,'coolMinutes from hot toward fridge ('+cd+')');
 
 process.exit(F?1:0);
