@@ -684,9 +684,9 @@ tr.risk td{background:var(--warn-bg)}
 };/*@END:INGREDIENTS@*/
 /*@DATA:TRANSITIONS@*/const TRANS_DATA={
  "schema": "kitchen.transitions/1",
- "version": 1,
+ "version": 2,
  "updated": "2026-06-11",
- "_note": "How ingredients move between states. prep_classes gate which transitions exist (structural, not name-string \u2014 plan \u00a70.4). coarse offsets adjust cut keep-life by coarseness. res_map binds transition\u2192station; cook_browns binds method\u2192browning. group_exceptions seeds plan item T (smart prep grouping): items that must break a like-cut batch, with reasons.",
+ "_note": "How ingredients move between states. prep_classes gate which transitions exist (structural, not name-string \u2014 plan \u00a70.4). coarse offsets adjust cut keep-life by coarseness. res_map binds transition\u2192station; cook_browns binds method\u2192browning. group_exceptions seeds plan item T (smart prep grouping): items that must break a like-cut batch, with reasons. v2: edge_kinetics binds heat-bearing transition edges to the kinetics primitive, and cook_doneness gives kinetics the doneness/safety floor it uses to derive or validate cook duration.",
  "prep_classes": {
   "root_veg": {
    "clean": 1,
@@ -793,6 +793,36 @@ tr.risk td{background:var(--warn-bg)}
   "fat": 1,
   "moist": 0,
   "microwave": 0
+ },
+ "edge_kinetics": {
+  "_note": "Binds heat-bearing transition edges to the kinetics primitive (kinetics edges on state transitions). Presence here is load-bearing: the engine only annotates an edge whose verb appears below. cook → env/tau/T_end/brownedness/brownLabel(+egg doneness); temper/cool → target threshold the edge drives toward.",
+  "cook": {
+   "env_from": "method",
+   "browns_from": "cook_browns"
+  },
+  "temper": {
+   "env": "counter",
+   "to_threshold": "temper"
+  },
+  "cool": {
+   "env": "fridge",
+   "to_threshold": "cool"
+  }
+ },
+ "cook_doneness": {
+  "_note": "Doneness/safety floor kinetics uses to derive or validate cook duration. by_group sets a safe internal temp per catalog group; egg uses the two-zone yolk model. Cook duration = max(recipe.cookMin, time-to-target); egg duration is target-derived. A per-recipe cookTo:{core_C|soft_C|yolk} overrides these. Seeded food-safety estimates — verify:true, cite a regional authority before trusting; do not fabricate thresholds.",
+  "by_group": {
+   "protein": {
+    "core_C": 74
+   },
+   "veg": {
+    "soft_C": 90
+   }
+  },
+  "egg": {
+   "yolk": "jammy"
+  },
+  "verify": true
  },
  "verbs": {
   "clean": {
@@ -1305,7 +1335,7 @@ tr.risk td{background:var(--warn-bg)}
  }
 };/*@END:KINETICS@*/
 const KD=(()=>{const catalog={},nutr={},vol={};for(const k in ING_DATA.items){const r=ING_DATA.items[k];const c={};for(const f in r){if(f==="nutrition"||f==="vol"||f==="verify"||f==="allergen_note")continue;c[f]=r[f];}catalog[k]=c;if(r.nutrition)nutr[k]=r.nutrition;if(r.vol!=null)vol[k]=r.vol;}return{catalog,nutr,vol,trans:TRANS_DATA,library:REC_DATA.library,plan:REC_DATA.plan,inventory:SEED_DATA.inventory,seed:SEED_DATA,kin:KIN_DATA};})();
-const APP_VERSION="2.2.0";
+const APP_VERSION="2.3.0";
 function recipeAllergens(r){const s={};(r.ingredients||[]).forEach(it=>{(CATALOG[it.k].allergens||[]).forEach(a=>s[a]=1);});return Object.keys(s).sort();}
 const CATALOG=KD.catalog;
 const PREP_CLASS=KD.trans.prep_classes;
@@ -1323,6 +1353,7 @@ function synthPrep(k,form){const states={},procs=[],nm=CATALOG[k].name.toLowerCa
   if(pc&&pc.peel&&form!=="zested"&&form!=="juiced"){const id=k+"_peeled";states[id]={kind:"prep",keep:stateKeep(k,"peeled"),leaf:k,form:"peeled"};procs.push({id:uid("peel"),title:"Peel "+nm,trans:"peel",active:1,dur:2,consumes:[cur],produces:[id],waste:[nm+" peelings"]});cur=id;if(form==="peeled")return{root:cur,states,procs};}
   const verb=form==="juiced"?"Juice":form==="grated"?"Grate":form==="crumbled"?"Crumble":form==="jointed"?"Joint":"Cut";const trans=form==="juiced"?"juice":form==="grated"?"grind":form==="crumbled"?"crumble":"cut";const id=k+"_"+form;states[id]={kind:"cut",keep:stateKeep(k,form),leaf:k,form};procs.push({id:uid(form),title:verb+" "+nm+" · "+form,trans,active:1,dur:2,consumes:[cur],produces:[id],waste:form==="juiced"?[nm+" pulp"]:[]});return{root:id,states,procs};}
 const COOK_BROWNS=KD.trans.cook_browns;
+const EDGE_KIN=KD.trans.edge_kinetics||null, COOK_DONENESS=KD.trans.cook_doneness||null;
 const KIN=KD.kin,R_GAS=KIN.constants.R_J_per_mol_K;
 function ingTau(k){return (KIN.tau_overrides&&KIN.tau_overrides[k])||KIN.default_tau_min[CATALOG[k].group]||15;}
 function kinEnv(key){return KIN.environments[key].T_C;}
@@ -1344,9 +1375,15 @@ function thermalCurve(k,method,t,opts){opts=opts||{};const tau=effTau(k,opts),en
 function thermalSamples(k,method,dur,n){n=n||Math.max(2,Math.min(120,dur));const pts=[];for(let i=0;i<=n;i++){const t=dur*i/n;pts.push({t:+t.toFixed(1),...thermalCurve(k,method,t)});}return pts;}
 function renderKinCurve(k,method,dur,lotOpts){lotOpts=lotOpts||{};const cap=el("div","kcurve"),W=300,H=54,pad=4,svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.setAttribute("role","img");const addPath=(pts,key,col,Tmax)=>{const d=pts.map((p,i)=>{const x=pad+(W-2*pad)*(p.t/dur),y=H-6-(H-12)*(p[key]/Tmax);return (i?"L":"M")+x.toFixed(1)+","+y.toFixed(1);}).join(" ");const pe=document.createElementNS("http://www.w3.org/2000/svg","path");pe.setAttribute("d",d);pe.setAttribute("fill","none");pe.setAttribute("stroke",col);pe.setAttribute("stroke-width","1.8");svg.appendChild(pe);};if(k==="egg"&&method==="moist"&&KIN.egg_zones){const pts=eggZoneSamples(method,dur,Math.min(60,dur),{startFrom:"fridge"}),Tmax=100;addPath(pts,"T_white","var(--rust)",Tmax);addPath(pts,"T_yolk","var(--plum)",Tmax);const dn=eggDoneness(method,dur,{startFrom:"fridge"});cap.appendChild(svg);cap.appendChild(el("div","kl","<b>"+CATALOG[k].name+"</b> · simmer · white <span class=\"mono\">"+dn.T_white+"°C</span> · yolk <span class=\"mono\">"+dn.T_yolk+"°C</span> · <b>"+dn.overall+"</b> <span class=\"mu\">(seeded two-zone, verify)</span>"));return cap;}const kinOpts=Object.assign({startFrom:lotOpts.T0!=null?"custom":"fridge"},lotOpts),pts=[];for(let i=0;i<=Math.min(60,dur);i++){const t=dur*i/Math.min(60,dur);pts.push({t:+t.toFixed(1),...thermalCurve(k,method,t,kinOpts)});}const Tmax=Math.max(...pts.map(p=>p.T),KIN.maillard.browning_onset_C+10);addPath(pts,"T","var(--rust)",Tmax);if(COOK_BROWNS[method])addPath(pts,"brownedness","var(--butter)",1);const end=thermalCurve(k,method,dur,kinOpts),cont=lotContainerKey(null,k);cap.appendChild(svg);cap.appendChild(el("div","kl","<b>"+CATALOG[k].name+"</b> · "+method+" · τ="+end.tau+"m"+(end.tauMult>1?" (×"+end.tauMult+" "+cont.replace(/_/g," ")+")":"")+" · T<sub>end</sub>="+end.T+"°C"+(COOK_BROWNS[method]?" · brown="+end.brownLabel+" ("+end.brownedness+")":"")+" <span class=\"mu\">(seeded kinetics, verify)</span>"));return cap;}
 const cookOutcome=m=>{const browns=!!COOK_BROWNS[m];return{method:m||"moist",browns,crust:browns?"browned":"none"};};
-function injectTemper(k,root,states,procs,lot){const I=CATALOG[k];if(!I.temperMin)return root;const opts=lotThermalOpts(lot,k),tm=temperMinutes(k,opts),dur=Math.ceil(tm!=null?tm:I.temperMin),id=k+"_tempered";states[id]={kind:"prep",keep:I.keep,leaf:k,form:"tempered"};const pulse=dur>=10?{every:Math.min(10,Math.max(5,Math.floor(dur/3))),note:"rotate pack"}:null;procs.push({id:uid("temper"),title:"Temper "+I.name+" on counter",trans:"temper",active:0,dur,pulse,consumes:[root],produces:[id],waste:[]});return id;}
+// ---- kinetics edges on transitions: pick the doneness-limiting ingredient, derive/validate cook duration, annotate the edge ----
+const YOLK_ORD=["runny","jammy","medium","hard"];
+function cookRep(leaves){if(!leaves||!leaves.length)return null;const p=leaves.find(k=>CATALOG[k]&&CATALOG[k].group==="protein");if(p)return p;return leaves.slice().filter(k=>CATALOG[k]).sort((a,b)=>ingTau(b)-ingTau(a))[0]||null;}
+function cookTarget(rep,recipe){if(recipe&&recipe.cookTo)return recipe.cookTo;if(!COOK_DONENESS||!rep)return null;if(rep==="egg")return COOK_DONENESS.egg||null;const g=CATALOG[rep]&&CATALOG[rep].group;return(COOK_DONENESS.by_group&&COOK_DONENESS.by_group[g])||null;}
+function cookMinutes(rep,method,recipe){const fallback=(recipe&&recipe.cookMin)||20,tgt=cookTarget(rep,recipe);if(!rep||!tgt)return fallback;if(tgt.yolk&&KIN.egg_zones){const want=YOLK_ORD.indexOf(tgt.yolk);for(let t=1;t<=60;t++){const d=eggDoneness(method,t,{startFrom:"fridge"});if(d&&YOLK_ORD.indexOf(d.yolk)>=want)return t;}return fallback;}const targetC=tgt.core_C!=null?tgt.core_C:tgt.soft_C;if(targetC!=null){for(let t=0;t<=300;t++){if(thermalCurve(rep,method,t).T>=targetC)return Math.max(fallback,t);}return fallback;}return fallback;}
+function edgeKinetics(trans,rep,method,dur,opts){if(!EDGE_KIN||!EDGE_KIN[trans])return null;opts=opts||{};if(trans==="cook"){if(!rep)return null;const c=thermalCurve(rep,method,dur,opts),out={trans,rep,env:c.env,tau:c.tau,T_end:c.T,brownedness:c.brownedness,brownLabel:c.brownLabel,verify:true};if(c.doneness)out.doneness=c.doneness;return out;}if(trans==="temper")return{trans,rep,env:KIN.temper_env,to_C:KIN.temper_threshold_C,dur,verify:true};if(trans==="cool")return{trans,rep,env:"fridge",to_C:KIN.cool_threshold_C||8,dur,verify:true};return null;}
+function injectTemper(k,root,states,procs,lot){const I=CATALOG[k];if(!I.temperMin)return root;const opts=lotThermalOpts(lot,k),tm=temperMinutes(k,opts),dur=Math.ceil(tm!=null?tm:I.temperMin),id=k+"_tempered";states[id]={kind:"prep",keep:I.keep,leaf:k,form:"tempered"};const pulse=dur>=10?{every:Math.min(10,Math.max(5,Math.floor(dur/3))),note:"rotate pack"}:null;procs.push({id:uid("temper"),title:"Temper "+I.name+" on counter",trans:"temper",active:0,dur,pulse,consumes:[root],produces:[id],waste:[],kin:edgeKinetics("temper",k,null,dur,opts)});return id;}
 function miseGroups(recipe){const g=recipeGraph(recipe),by={};g.procs.forEach(p=>{if(p.trans==="cook"||p.trans==="temper"||p.trans==="cool")return;const leaf=p.consumes.concat(p.produces).map(id=>g.states[id]&&g.states[id].leaf).find(Boolean);if(!leaf)return;const st=CATALOG[leaf].store||defaultLoc(leaf);by[st]=by[st]||[];by[st].push(p.title);});return by;}
-function recipeGraph(recipe){_uid=0;const g={states:{},procs:[]},roots=[];recipe.ingredients.forEach(it=>{const s=synthPrep(it.k,it.form||"whole");Object.keys(s.states).forEach(id=>{if(!g.states[id])g.states[id]=s.states[id];});s.procs.forEach(p=>g.procs.push(p));roots.push(injectTemper(it.k,s.root,g.states,g.procs,null));});const out=recipe.id;g.states[out]={kind:"cooked",keep:recipe.keep||3,name:recipe.name};const o=cookOutcome(recipe.method);g.procs.push({id:uid("cook"),title:"Cook & plate · "+recipe.name+" · "+o.method+(o.browns?" (browns → crust)":" (no browning)"),trans:"cook",active:1,dur:recipe.cookMin||20,consumes:roots,produces:[out],waste:[],method:o.method,browns:o.browns,crust:o.crust});return g;}
+function recipeGraph(recipe){_uid=0;const g={states:{},procs:[]},roots=[];recipe.ingredients.forEach(it=>{const s=synthPrep(it.k,it.form||"whole");Object.keys(s.states).forEach(id=>{if(!g.states[id])g.states[id]=s.states[id];});s.procs.forEach(p=>g.procs.push(p));roots.push(injectTemper(it.k,s.root,g.states,g.procs,null));});const out=recipe.id;g.states[out]={kind:"cooked",keep:recipe.keep||3,name:recipe.name};const o=cookOutcome(recipe.method);const cookLeaves=roots.map(r=>g.states[r]&&g.states[r].leaf).filter(Boolean),rep=cookRep(cookLeaves),cdur=cookMinutes(rep,o.method,recipe),kin=edgeKinetics("cook",rep,o.method,cdur);const dlabel=kin&&kin.doneness?kin.doneness.overall:(o.browns&&kin?kin.brownLabel+" crust":"no browning");g.procs.push({id:uid("cook"),title:"Cook & plate · "+recipe.name+" · "+o.method+" · "+dlabel,trans:"cook",active:1,dur:cdur,consumes:roots,produces:[out],waste:[],method:o.method,browns:o.browns,crust:o.crust,rep,kin});return g;}
 function topoSteps(g){const av={},out=[],rest=g.procs.slice();Object.keys(g.states).forEach(s=>{if(g.states[s].kind==="leaf")av[s]=1;});let gd=0;while(rest.length&&gd++<999){let mv=0;for(let i=0;i<rest.length;i++){if(rest[i].consumes.every(c=>av[c])){const p=rest.splice(i,1)[0];out.push(p);p.produces.forEach(o=>av[o]=1);mv=1;break;}}if(!mv){out.push(...rest);break;}}return out;}
 function keepFor(l){const I=CATALOG[l.k];return(l.opened!=null&&I.openedKeep!=null)?I.openedKeep:I.keep;}
 function effExpiry(l){const b=(l.opened!=null?l.opened:l.bought);return Math.min(l.sellBy!=null?l.sellBy:Infinity,b+keepFor(l));}

@@ -98,4 +98,28 @@ ok(!!N.typeofMG&&Object.keys(N.typeofMG(N.LIBRARY.bolognese)).length>=2,'miseGro
 const cd=N.typeofCD('beef_mince',80,{tauMult:1.8});
 ok(cd!=null&&cd>0,'coolMinutes from hot toward fridge ('+cd+')');
 
+// 7. kinetics edges on transitions (data binding + B doneness-derived/validated cook durations)
+const TR=JSON.parse(fs.readFileSync('../data/transitions.json','utf8'));
+ok(TR.version>=2&&TR.edge_kinetics&&TR.cook_doneness,'transitions v2: edge_kinetics + cook_doneness present');
+ok(!!(TR.edge_kinetics.cook&&TR.edge_kinetics.temper&&TR.edge_kinetics.cool),'edge_kinetics binds cook/temper/cool verbs');
+ok(TR.cook_doneness.by_group.protein.core_C===74&&TR.cook_doneness.egg.yolk==='jammy'&&TR.cook_doneness.verify===true,'cook_doneness floors seeded + verify-flagged');
+// every recipe has exactly one cook edge, and every cook edge carries a kin annotation
+const cookEdges=Object.values(N.LIBRARY).map(r=>N.recipeGraph(r).procs.filter(p=>p.trans==='cook'));
+ok(cookEdges.every(e=>e.length===1),'exactly one cook edge per recipe');
+const allCook=cookEdges.flat();
+ok(allCook.every(p=>p.kin&&p.kin.env&&p.kin.brownLabel&&p.rep),'every cook edge carries kin {env,brownLabel} + rep');
+// representative is the doneness-limiting ingredient (protein where present)
+const bgp=N.recipeGraph(N.LIBRARY.bolognese).procs, bcook=bgp.find(p=>p.trans==='cook');
+// brownLabel is keyed to the rep's lumped CORE temp crossing the Maillard onset (~140°C), not the pan-contact surface;
+// at 40m beef_mince core is ~136°C (<onset) so the honest edge readout is "pale". Pin the true model output.
+ok(bcook.rep==='beef_mince'&&bcook.kin.env==='pan'&&bcook.kin.brownLabel==='pale','bolognese cook edge: beef_mince rep, pan env, core-keyed brown="'+bcook.kin.brownLabel+'" at '+bcook.dur+'m');
+ok(bgp.filter(p=>p.trans==='temper').every(p=>p.kin&&p.kin.to_C===15),'bolognese temper edge carries kin target (to 15°C)');
+const crc=N.recipeGraph(N.LIBRARY.chicken_roast).procs.find(p=>p.trans==='cook');
+ok(crc.rep==='chicken'&&crc.kin.env==='oven','chicken roast cook edge: chicken rep, oven env');
+// egg cook duration is two-zone doneness-derived; edge carries doneness
+const egc=N.recipeGraph(N.LIBRARY.boiled_egg).procs.find(p=>p.trans==='cook');
+ok(egc.dur===7&&egc.kin.doneness&&egc.kin.doneness.overall==='soft-boiled (jammy)','boiled egg cook edge: 7m derived → jammy doneness');
+// B: protein cook honours kinetics safety floor via max(cookMin, t_safe); seed cookMins already clear it → durations unchanged
+ok(bcook.dur===40&&crc.dur===75,'kinetics-aware cook durations unchanged (seed times already clear doneness floor)');
+
 process.exit(F?1:0);
