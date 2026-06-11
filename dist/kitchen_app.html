@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Martin & Co. — kitchen</title><style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Spline+Sans+Mono:wght@400;500&display=swap');
+:root{--paper:#f3ece1;--card:#fbf6ec;--ink:#2a1d12;--ink2:#6a5a48;--rust:#a93b1b;--rust2:#7a2a14;--sage:#6b7a4a;--plum:#7a4d8c;--line:#cbbea7;--butter:#d9a85f;--amber:#a98a55;--cream:#efe6d4;--cream-b:#b9a888;--warn:#b5471f;--warn-bg:#f5e3da;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Fraunces',Georgia,serif;line-height:1.5;-webkit-font-smoothing:antialiased;background-image:radial-gradient(circle at 12% 8%,rgba(217,168,95,.06),transparent 40%),radial-gradient(circle at 88% 92%,rgba(122,77,140,.05),transparent 45%)}
+.mono{font-family:'Spline Sans Mono',monospace}.mu{color:var(--ink2)}
+.wrap{max-width:1000px;margin:0 auto;padding:24px 18px 80px}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1.5px solid var(--line);padding-bottom:13px;flex-wrap:wrap;gap:10px}
+.brand{font-size:27px;font-weight:600;font-style:italic}.brand .amp{color:var(--rust)}
+.tag{font-size:12.5px;color:var(--ink2);max-width:580px}
+.pill{font-family:'Spline Sans Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--rust2);border:1px solid var(--rust);border-radius:20px;padding:4px 11px;background:rgba(169,59,27,.05)}
+#nav{display:flex;gap:3px;margin:16px 0 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tab{font-family:'Spline Sans Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 11px;cursor:pointer;color:var(--ink2);border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--ink)}.tab.on{color:var(--rust2);border-bottom-color:var(--rust)}
+#main{background:var(--card);border:1px solid var(--line);border-top:none;border-radius:0 0 14px 14px;padding:18px;min-height:380px;box-shadow:0 8px 26px -18px rgba(42,29,18,.35)}
+.hint{font-size:12.5px;color:var(--ink2);font-style:italic;margin-bottom:14px;line-height:1.6}
+.ph{font-family:'Spline Sans Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--rust2);margin:16px 0 7px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}@media(max-width:780px){.week{grid-template-columns:repeat(4,1fr)}}
+.day{border:1px solid var(--cream-b);background:var(--cream);border-radius:10px;padding:8px;min-height:92px}
+.day .dl{font-family:'Spline Sans Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--amber);margin-bottom:6px}
+.dchip{display:flex;justify-content:space-between;align-items:center;gap:4px;background:rgba(107,122,74,.12);border:1px solid var(--sage);border-radius:7px;padding:3px 6px;font-size:11px;margin-bottom:4px;line-height:1.25}
+.dchip .lf{color:var(--rust)}
+.add{width:100%;font-family:'Spline Sans Mono',monospace;font-size:10px;border:1px dashed var(--line);background:var(--paper);border-radius:6px;padding:4px;color:var(--ink2);cursor:pointer}
+.flow{font-size:12px;color:var(--ink);background:rgba(217,168,95,.1);border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-top:12px;line-height:1.55}
+.warn{font-size:12.5px;color:var(--warn);background:var(--warn-bg);border:1px solid var(--warn);border-radius:9px;padding:9px 11px;margin-bottom:12px}
+.brow{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.lbl{font-size:11px;color:var(--ink2)}
+.brow input,.brow select{font-family:'Spline Sans Mono',monospace;font-size:12px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+.brow label{font-size:11px;color:var(--ink2);display:flex;align-items:center;gap:3px}
+.go{font-family:'Spline Sans Mono',monospace;font-size:11px;padding:6px 12px;border:1px solid var(--sage);background:var(--sage);color:#fff;border-radius:8px;cursor:pointer}
+.save{font-family:'Spline Sans Mono',monospace;font-size:12px;padding:8px 16px;border:1px solid var(--rust);background:var(--rust);color:#fff;border-radius:9px;cursor:pointer;margin-top:6px}
+.save:disabled{opacity:.4;cursor:not-allowed}
+.ings{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{font-family:'Spline Sans Mono',monospace;font-size:11px;padding:3px 9px;border:1px solid var(--cream-b);background:#fff;border-radius:9px;display:inline-flex;align-items:center;gap:6px}
+.chip.lib{background:var(--cream)}
+.x{cursor:pointer;color:var(--ink2);font-family:monospace}.x:hover{color:var(--rust)}
+.rec{border-left:3px solid var(--line);padding-left:13px;margin:14px 0}
+.rec h3{font-size:15px;font-weight:600;font-style:italic}.rec .v{font-family:'Spline Sans Mono',monospace;font-size:10px;color:var(--sage);margin-left:6px;font-style:normal}
+.step{display:flex;gap:9px;padding:5px 0;border-bottom:1px solid var(--line);font-size:13px}
+.step .n{font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:var(--ink2);width:20px;flex:none}
+.step .mu{font-size:10px}.wst{color:var(--warn);font-style:italic}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-family:'Spline Sans Mono',monospace;font-size:9.5px;text-transform:uppercase;color:var(--amber);text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
+td{padding:6px 7px;border-bottom:1px solid var(--line)}td.num,th.num{text-align:right;font-family:'Spline Sans Mono',monospace}
+tr.risk td{background:var(--warn-bg)}
+.badge{font-family:'Spline Sans Mono',monospace;font-size:9px;padding:2px 6px;border-radius:8px;white-space:nowrap}
+.badge.open,.badge.short{background:rgba(181,71,31,.12);color:var(--warn);border:1px solid var(--warn)}
+.badge.pack{background:rgba(122,77,140,.1);color:var(--plum);border:1px solid var(--plum)}
+.badge.fresh{background:rgba(107,122,74,.12);color:var(--sage);border:1px solid var(--sage)}
+.badge.lf{background:rgba(217,168,95,.18);color:var(--rust2);border:1px solid var(--butter)}
+.lo{font-size:10px;color:var(--warn);font-style:italic;margin-left:6px;font-family:'Fraunces',serif}
+.barrow{display:flex;align-items:center;gap:10px;margin:6px 0;font-family:'Spline Sans Mono',monospace;font-size:11px}
+.barrow .bl{width:70px;color:var(--ink)}.barrow .bar{flex:1;height:10px;border-radius:6px;background:var(--cream);overflow:hidden}.barrow .bar i{display:block;height:100%}.barrow .bd{width:90px;text-align:right;color:var(--ink2)}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:12px 14px}.stat .sv{font-size:23px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--rust)}.stat .sk{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2);margin-top:4px;font-family:'Spline Sans Mono',monospace}
+.alg{font-size:9px;font-family:'Spline Sans Mono',monospace;color:var(--rust);text-transform:uppercase;letter-spacing:.04em}
+.foot{margin-top:24px;padding-top:13px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink2);font-style:italic;line-height:1.7}
+
+.resin{font-size:11px;color:var(--ink2)}
+.gantt{margin:6px 0 4px;overflow-x:auto;padding-bottom:4px}
+.lane{display:flex;align-items:center;gap:8px;margin:3px 0}
+.lname{width:62px;font-family:'Spline Sans Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--amber);flex:none;text-align:right}
+.track{position:relative;height:20px;background:var(--cream);border-radius:5px;flex:none;min-width:60px}
+.blk{position:absolute;top:1px;height:18px;border-radius:4px;overflow:hidden;display:flex;align-items:center;padding:0 4px;box-shadow:0 1px 0 rgba(0,0,0,.12)}
+.blk span{font-family:'Spline Sans Mono',monospace;font-size:8.5px;color:#fff;white-space:nowrap}
+</style></head><body><div class="wrap"><header class="top"><div><div class="brand">Martin <span class="amp">&amp;</span> Co.</div><div class="tag">One model end to end — build recipes, plan the week, run a resource-constrained cook schedule, inspect ingredient transitions, keep a lot-based inventory with storage capacity, drive a shopping list, track waste, and tally nutrition.</div></div><div class="pill">integrated prototype · v2.0 · external data packs</div></header><div id="nav"></div><div id="main"></div><div class="foot">Single shared engine: catalog with quantity profiles, keep-life (prep + opened clocks), prep-class affordances incl. deskin, cook method/crust, recipe synthesis, lot inventory with litre-capacity, plan-driven shopping with best-fit packs and leftover routing, waste, and macro nutrition. Quantities, pack sizes, volumes, keep-lives and macros are seeded regional estimates — calibrate before trusting; keep-lives are food-safety-adjacent, verify with a regional authority.</div></div><script>
+/* UNIFIED kitchen engine — catalog, keep-life, quantity, recipes, inventory, shopping,
+   cook method/crust, storage capacity, schedule, waste, nutrition, transitions. */
+/*@DATA:INGREDIENTS@*/const ING_DATA={
+ "schema": "kitchen.ingredients/1",
+ "version": 1,
+ "updated": "2026-06-11",
+ "_note": "Unified ingredient catalog. One record per item: identity, purchasing (regime/unit/bridges/packs), keep model (keep/openedKeep/cutLife; days), storage (store/cond/temperMin \u2014 feeds plan items A & R), facets (src/variety/part/treat \u2014 feeds item S), regulatory-14 allergens, nutrition per canonical unit, vol in litres per canonical unit. ALL keep-lives, nutrition and allergen values are seeded estimates: verify:true until cited against a real authority (plan \u00a70.6). Never fabricate citations \u2014 fill src when verified.",
+ "allergen_vocab": [
+  "celery",
+  "cereals_gluten",
+  "crustaceans",
+  "eggs",
+  "fish",
+  "lupin",
+  "milk",
+  "molluscs",
+  "mustard",
+  "nuts",
+  "peanuts",
+  "sesame",
+  "soya",
+  "sulphites"
+ ],
+ "items": {
+  "onion": {
+   "name": "Onion",
+   "group": "veg",
+   "regime": "count",
+   "unit": "each",
+   "keep": 30,
+   "prepClass": "bulb",
+   "bridges": {
+    "g": 0.006666666666666667
+   },
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "bulb",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 60,
+    "p": 1.7,
+    "c": 14,
+    "f": 0.1
+   },
+   "vol": 0.2,
+   "verify": true
+  },
+  "garlic": {
+   "name": "Garlic",
+   "group": "veg",
+   "regime": "count",
+   "unit": "clove",
+   "keep": 60,
+   "packs": [
+    10
+   ],
+   "packLabel": "bulb",
+   "prepClass": "garlic_bulb",
+   "bridges": {},
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "bulb",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 4,
+    "p": 0.2,
+    "c": 1,
+    "f": 0
+   },
+   "vol": 0.02,
+   "verify": true
+  },
+  "carrot": {
+   "name": "Carrot",
+   "group": "veg",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 21,
+   "cutLife": 3,
+   "prepClass": "root_veg",
+   "bridges": {
+    "each": 80
+   },
+   "store": "fridge",
+   "cond": "chilled",
+   "facets": {
+    "src": "plant",
+    "part": "root",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 0.41,
+    "p": 0.009,
+    "c": 0.096,
+    "f": 0.002
+   },
+   "vol": 0.0012,
+   "verify": true
+  },
+  "celery": {
+   "name": "Celery",
+   "group": "veg",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 14,
+   "cutLife": 3,
+   "prepClass": "stalk_veg",
+   "bridges": {
+    "stick": 40
+   },
+   "store": "fridge",
+   "cond": "chilled",
+   "facets": {
+    "src": "plant",
+    "part": "stalk",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [
+    "celery"
+   ],
+   "allergen_note": "celery is itself one of the regulatory 14",
+   "nutrition": {
+    "kcal": 0.16,
+    "p": 0.007,
+    "c": 0.03,
+    "f": 0.002
+   },
+   "vol": 0.0015,
+   "verify": true
+  },
+  "potato": {
+   "name": "Potato",
+   "group": "veg",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 30,
+   "cutLife": 1,
+   "prepClass": "root_veg",
+   "bridges": {
+    "each": 200
+   },
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "tuber",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 0.77,
+    "p": 0.02,
+    "c": 0.17,
+    "f": 0.001
+   },
+   "vol": 0.0011,
+   "verify": true
+  },
+  "pepper": {
+   "name": "Red pepper",
+   "group": "veg",
+   "regime": "count",
+   "unit": "each",
+   "keep": 10,
+   "prepClass": "fruit_veg",
+   "bridges": {},
+   "store": "fridge",
+   "cond": "chilled",
+   "facets": {
+    "src": "plant",
+    "part": "fruit",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 30,
+    "p": 1,
+    "c": 7,
+    "f": 0.3
+   },
+   "vol": 0.25,
+   "verify": true
+  },
+  "beef_mince": {
+   "name": "Beef mince",
+   "group": "protein",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 2,
+   "packs": [
+    500
+   ],
+   "prepClass": "mince",
+   "bridges": {},
+   "store": "fridge",
+   "cond": "fridge_cold",
+   "temperMin": 30,
+   "facets": {
+    "src": "beef",
+    "part": "muscle",
+    "treat": [
+     "minced",
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 2.5,
+    "p": 0.18,
+    "c": 0,
+    "f": 0.2
+   },
+   "vol": 0.0011,
+   "verify": true
+  },
+  "chicken": {
+   "name": "Whole chicken",
+   "group": "protein",
+   "regime": "count",
+   "unit": "each",
+   "keep": 2,
+   "prepClass": "poultry_bird",
+   "bridges": {
+    "g": 0.000625
+   },
+   "store": "fridge",
+   "cond": "fridge_cold",
+   "facets": {
+    "src": "chicken",
+    "part": "whole_bird",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 1900,
+    "p": 350,
+    "c": 0,
+    "f": 50
+   },
+   "vol": 2,
+   "verify": true
+  },
+  "chorizo": {
+   "name": "Chorizo",
+   "group": "protein",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 21,
+   "packs": [
+    225
+   ],
+   "prepClass": "sausage",
+   "bridges": {},
+   "store": "fridge",
+   "cond": "chilled",
+   "facets": {
+    "src": "pork",
+    "part": "muscle",
+    "treat": [
+     "cured",
+     "smoked"
+    ]
+   },
+   "allergens": [],
+   "allergen_note": "VERIFY label: cured sausage often declares milk and/or sulphites",
+   "nutrition": {
+    "kcal": 4.5,
+    "p": 0.24,
+    "c": 0.02,
+    "f": 0.38
+   },
+   "vol": 0.0012,
+   "verify": true
+  },
+  "wors": {
+   "name": "Boerewors",
+   "group": "protein",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 3,
+   "packs": [
+    500
+   ],
+   "prepClass": "sausage",
+   "bridges": {},
+   "store": "fridge",
+   "cond": "fridge_cold",
+   "facets": {
+    "src": "beef",
+    "part": "muscle",
+    "treat": [
+     "minced",
+     "spiced",
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "allergen_note": "VERIFY label: may contain sulphites/coriander blends",
+   "nutrition": {
+    "kcal": 3.3,
+    "p": 0.15,
+    "c": 0.01,
+    "f": 0.3
+   },
+   "vol": 0.0012,
+   "verify": true
+  },
+  "tinned_tomato": {
+   "name": "Tinned tomato",
+   "group": "pantry",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 540,
+   "packs": [
+    400
+   ],
+   "openedKeep": 4,
+   "bridges": {},
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "fruit",
+    "treat": [
+     "canned"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 0.18,
+    "p": 0.009,
+    "c": 0.04,
+    "f": 0.002
+   },
+   "vol": 0.001,
+   "verify": true
+  },
+  "tomato_paste": {
+   "name": "Tomato paste",
+   "group": "pantry",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 365,
+   "packs": [
+    200
+   ],
+   "openedKeep": 14,
+   "bridges": {
+    "tbsp": 15
+   },
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "fruit",
+    "treat": [
+     "concentrated"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 0.82,
+    "p": 0.04,
+    "c": 0.19,
+    "f": 0.005
+   },
+   "vol": 0.001,
+   "verify": true
+  },
+  "stock": {
+   "name": "Beef stock",
+   "group": "pantry",
+   "regime": "volume",
+   "unit": "ml",
+   "keep": 365,
+   "packs": [
+    500,
+    1000
+   ],
+   "openedKeep": 5,
+   "bridges": {},
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "beef",
+    "treat": [
+     "concentrated"
+    ]
+   },
+   "allergens": [],
+   "allergen_note": "VERIFY label: stock commonly contains celery",
+   "nutrition": {
+    "kcal": 0.04,
+    "p": 0.005,
+    "c": 0.005,
+    "f": 0.001
+   },
+   "vol": 0.001,
+   "verify": true
+  },
+  "oil": {
+   "name": "Olive oil",
+   "group": "pantry",
+   "regime": "volume",
+   "unit": "ml",
+   "keep": 540,
+   "packs": [
+    750
+   ],
+   "openedKeep": 180,
+   "bridges": {
+    "tbsp": 15
+   },
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "fruit",
+    "treat": [
+     "pressed"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 8.4,
+    "p": 0,
+    "c": 0,
+    "f": 0.92
+   },
+   "vol": 0.001,
+   "verify": true
+  },
+  "red_wine": {
+   "name": "Red wine",
+   "group": "pantry",
+   "regime": "volume",
+   "unit": "ml",
+   "keep": 365,
+   "packs": [
+    750
+   ],
+   "openedKeep": 5,
+   "bridges": {},
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "fruit",
+    "treat": [
+     "fermented"
+    ]
+   },
+   "allergens": [
+    "sulphites"
+   ],
+   "allergen_note": "VERIFY: nearly all wine exceeds the 10 mg/kg SO2 threshold",
+   "nutrition": {
+    "kcal": 0.85,
+    "p": 0,
+    "c": 0.026,
+    "f": 0
+   },
+   "vol": 0.001,
+   "verify": true
+  },
+  "maize_meal": {
+   "name": "Maize meal",
+   "group": "pantry",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 365,
+   "packs": [
+    1000
+   ],
+   "bridges": {},
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "grain",
+    "treat": [
+     "milled"
+    ]
+   },
+   "allergens": [],
+   "allergen_note": "VERIFY mill cross-contamination (gluten)",
+   "nutrition": {
+    "kcal": 3.6,
+    "p": 0.07,
+    "c": 0.79,
+    "f": 0.018
+   },
+   "vol": 0.0012,
+   "verify": true
+  },
+  "butter": {
+   "name": "Butter",
+   "group": "pantry",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 30,
+   "packs": [
+    250
+   ],
+   "openedKeep": 21,
+   "bridges": {},
+   "store": "fridge",
+   "cond": "chilled",
+   "facets": {
+    "src": "dairy",
+    "treat": [
+     "churned"
+    ]
+   },
+   "allergens": [
+    "milk"
+   ],
+   "nutrition": {
+    "kcal": 7.2,
+    "p": 0.009,
+    "c": 0.001,
+    "f": 0.81
+   },
+   "vol": 0.0011,
+   "verify": true
+  },
+  "roast_chicken_leftover": {
+   "name": "Roast chicken (leftover)",
+   "group": "produced",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 3,
+   "produced": true,
+   "bridges": {},
+   "store": "fridge",
+   "cond": "chilled",
+   "facets": {
+    "src": "chicken",
+    "treat": [
+     "cooked"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 2,
+    "p": 0.25,
+    "c": 0,
+    "f": 0.11
+   },
+   "vol": 0.0015,
+   "verify": true
+  }
+ }
+};/*@END:INGREDIENTS@*/
+/*@DATA:TRANSITIONS@*/const TRANS_DATA={
+ "schema": "kitchen.transitions/1",
+ "version": 1,
+ "updated": "2026-06-11",
+ "_note": "How ingredients move between states. prep_classes gate which transitions exist (structural, not name-string \u2014 plan \u00a70.4). coarse offsets adjust cut keep-life by coarseness. res_map binds transition\u2192station; cook_browns binds method\u2192browning. group_exceptions seeds plan item T (smart prep grouping): items that must break a like-cut batch, with reasons.",
+ "prep_classes": {
+  "root_veg": {
+   "clean": 1,
+   "peel": 1,
+   "forms": [
+    "chunked",
+    "sliced",
+    "diced",
+    "grated"
+   ]
+  },
+  "bulb": {
+   "clean": 1,
+   "peel": 1,
+   "forms": [
+    "sliced",
+    "diced",
+    "grated"
+   ]
+  },
+  "garlic_bulb": {
+   "clean": 1,
+   "peel": 1,
+   "grind": 1,
+   "forms": [
+    "sliced",
+    "diced",
+    "grated"
+   ]
+  },
+  "stalk_veg": {
+   "clean": 1,
+   "forms": [
+    "sliced",
+    "diced",
+    "chunked"
+   ]
+  },
+  "fruit_veg": {
+   "clean": 1,
+   "forms": [
+    "chunked",
+    "sliced",
+    "diced"
+   ]
+  },
+  "citrus": {
+   "clean": 1,
+   "juice": 1,
+   "forms": [
+    "sliced",
+    "zested"
+   ]
+  },
+  "meat_cut": {
+   "forms": [
+    "sliced",
+    "chunked",
+    "diced"
+   ]
+  },
+  "poultry_bird": {
+   "forms": [
+    "jointed",
+    "sliced"
+   ]
+  },
+  "sausage": {
+   "deskin": 1,
+   "forms": [
+    "sliced",
+    "chunked",
+    "diced",
+    "crumbled"
+   ]
+  },
+  "mince": {
+   "forms": []
+  }
+ },
+ "coarse": {
+  "chunked": 2,
+  "sliced": 1,
+  "diced": 0,
+  "grated": -1,
+  "zested": -1,
+  "juiced": -1,
+  "crumbled": 0,
+  "jointed": 1
+ },
+ "res_map": {
+  "clean": "sink",
+  "peel": "board",
+  "cut": "board",
+  "grind": "board",
+  "deskin": "board",
+  "juice": "board",
+  "crumble": "board"
+ },
+ "cook_browns": {
+  "dry": 1,
+  "fat": 1,
+  "moist": 0,
+  "microwave": 0
+ },
+ "verbs": {
+  "clean": {
+   "station": "sink",
+   "dur": 1,
+   "waste": [
+    "rinse water"
+   ]
+  },
+  "peel": {
+   "station": "board",
+   "dur": 2,
+   "optional": true,
+   "waste": [
+    "peelings"
+   ]
+  },
+  "deskin": {
+   "station": "board",
+   "dur": 1,
+   "waste": [
+    "casing"
+   ]
+  },
+  "cut": {
+   "station": "board",
+   "dur": 2
+  },
+  "grind": {
+   "station": "board",
+   "dur": 2
+  },
+  "juice": {
+   "station": "board",
+   "dur": 2,
+   "waste": [
+    "pulp"
+   ]
+  },
+  "crumble": {
+   "station": "board",
+   "dur": 2
+  },
+  "cook": {
+   "station": "hob_or_oven"
+  }
+ },
+ "group_exceptions": [
+  {
+   "k": "garlic",
+   "rule": "grind_not_dice",
+   "why": "crushed via grind, not batched with the dicing pass"
+  },
+  {
+   "k": "beef_mince",
+   "rule": "meat_board",
+   "why": "raw meat on a separate board; never grouped with veg cuts"
+  },
+  {
+   "k": "chicken",
+   "rule": "meat_board",
+   "why": "raw poultry on a separate board + sanitise after"
+  },
+  {
+   "k": "wors",
+   "rule": "meat_board",
+   "why": "raw sausage on the meat board"
+  },
+  {
+   "k": "potato",
+   "rule": "opt_peel_lever",
+   "why": "peel choice flips keep-life (skin-on keeps longer) \u2014 group only within the chosen route"
+  }
+ ]
+};/*@END:TRANSITIONS@*/
+/*@DATA:RECIPES@*/const REC_DATA={
+ "schema": "kitchen.recipes/1",
+ "version": 1,
+ "updated": "2026-06-11",
+ "_note": "Recipe library. kind:'simple' = ingredient list + method; prep chains are synthesised by the engine. kind:'graph' (reserved, plan items K/L) = explicit bipartite graph {states:{id:{kind,keep,form}}, procs:[{id,title,trans,consumes,produces,heat,vessel,station,att,dur,pulse,waste}]} \u2014 the builder will save these. plan = default week.",
+ "library": {
+  "bolognese": {
+   "id": "bolognese",
+   "method": "fat",
+   "name": "Spaghetti Bolognese",
+   "keep": 4,
+   "cookMin": 40,
+   "ingredients": [
+    {
+     "k": "onion",
+     "qty": 1,
+     "u": "each",
+     "form": "diced"
+    },
+    {
+     "k": "carrot",
+     "qty": 80,
+     "u": "g",
+     "form": "diced"
+    },
+    {
+     "k": "celery",
+     "qty": 80,
+     "u": "g",
+     "form": "diced"
+    },
+    {
+     "k": "garlic",
+     "qty": 2,
+     "u": "clove",
+     "form": "diced"
+    },
+    {
+     "k": "beef_mince",
+     "qty": 500,
+     "u": "g"
+    },
+    {
+     "k": "tinned_tomato",
+     "qty": 400,
+     "u": "g"
+    },
+    {
+     "k": "tomato_paste",
+     "qty": 2,
+     "u": "tbsp"
+    },
+    {
+     "k": "stock",
+     "qty": 200,
+     "u": "ml"
+    },
+    {
+     "k": "red_wine",
+     "qty": 150,
+     "u": "ml"
+    },
+    {
+     "k": "oil",
+     "qty": 2,
+     "u": "tbsp"
+    }
+   ],
+   "kind": "simple"
+  },
+  "chicken_roast": {
+   "id": "chicken_roast",
+   "method": "dry",
+   "name": "Roast chicken & veg",
+   "keep": 3,
+   "cookMin": 75,
+   "yields": [
+    {
+     "k": "roast_chicken_leftover",
+     "qty": 500
+    }
+   ],
+   "ingredients": [
+    {
+     "k": "chicken",
+     "qty": 1,
+     "u": "each"
+    },
+    {
+     "k": "potato",
+     "qty": 600,
+     "u": "g",
+     "form": "chunked"
+    },
+    {
+     "k": "carrot",
+     "qty": 200,
+     "u": "g",
+     "form": "chunked"
+    },
+    {
+     "k": "garlic",
+     "qty": 4,
+     "u": "clove",
+     "form": "sliced"
+    },
+    {
+     "k": "onion",
+     "qty": 1,
+     "u": "each",
+     "form": "sliced"
+    },
+    {
+     "k": "oil",
+     "qty": 2,
+     "u": "tbsp"
+    }
+   ],
+   "kind": "simple"
+  },
+  "chicken_hash": {
+   "id": "chicken_hash",
+   "method": "fat",
+   "name": "Leftover chicken hash",
+   "keep": 1,
+   "cookMin": 20,
+   "ingredients": [
+    {
+     "k": "roast_chicken_leftover",
+     "qty": 400,
+     "u": "g"
+    },
+    {
+     "k": "potato",
+     "qty": 300,
+     "u": "g",
+     "form": "diced"
+    },
+    {
+     "k": "onion",
+     "qty": 1,
+     "u": "each",
+     "form": "diced"
+    },
+    {
+     "k": "oil",
+     "qty": 1,
+     "u": "tbsp"
+    }
+   ],
+   "kind": "simple"
+  },
+  "boerewors_pap": {
+   "id": "boerewors_pap",
+   "method": "fat",
+   "name": "Boerewors & pap",
+   "keep": 2,
+   "cookMin": 35,
+   "ingredients": [
+    {
+     "k": "wors",
+     "qty": 500,
+     "u": "g"
+    },
+    {
+     "k": "maize_meal",
+     "qty": 250,
+     "u": "g"
+    },
+    {
+     "k": "butter",
+     "qty": 30,
+     "u": "g"
+    },
+    {
+     "k": "onion",
+     "qty": 1,
+     "u": "each",
+     "form": "sliced"
+    },
+    {
+     "k": "stock",
+     "qty": 250,
+     "u": "ml"
+    },
+    {
+     "k": "oil",
+     "qty": 1,
+     "u": "tbsp"
+    }
+   ],
+   "kind": "simple"
+  }
+ },
+ "plan": [
+  {
+   "recipeId": "bolognese",
+   "day": 1
+  },
+  {
+   "recipeId": "chicken_roast",
+   "day": 3
+  },
+  {
+   "recipeId": "chicken_hash",
+   "day": 4
+  },
+  {
+   "recipeId": "boerewors_pap",
+   "day": 6
+  }
+ ]
+};/*@END:RECIPES@*/
+/*@DATA:SEED@*/const SEED_DATA={
+ "schema": "kitchen.seed_state/1",
+ "version": 1,
+ "updated": "2026-06-11",
+ "_note": "Session-churny seed data, kept apart from the reusable catalog: starting inventory lots (day-relative), storage locations & capacities (litres), default resource pool, perishable horizon (days).",
+ "inventory": [
+  {
+   "id": 1,
+   "k": "oil",
+   "qty": 480,
+   "bought": -40,
+   "sellBy": 500,
+   "opened": -40,
+   "loc": "pantry"
+  },
+  {
+   "id": 2,
+   "k": "tinned_tomato",
+   "qty": 400,
+   "bought": -20,
+   "sellBy": 520,
+   "opened": null,
+   "loc": "pantry"
+  },
+  {
+   "id": 3,
+   "k": "maize_meal",
+   "qty": 1000,
+   "bought": -30,
+   "sellBy": 335,
+   "opened": null,
+   "loc": "pantry"
+  },
+  {
+   "id": 4,
+   "k": "garlic",
+   "qty": 8,
+   "bought": -12,
+   "sellBy": 48,
+   "opened": null,
+   "loc": "pantry"
+  },
+  {
+   "id": 5,
+   "k": "onion",
+   "qty": 3,
+   "bought": -5,
+   "sellBy": 25,
+   "opened": null,
+   "loc": "pantry"
+  },
+  {
+   "id": 6,
+   "k": "stock",
+   "qty": 1000,
+   "bought": -15,
+   "sellBy": 350,
+   "opened": null,
+   "loc": "pantry"
+  },
+  {
+   "id": 7,
+   "k": "butter",
+   "qty": 250,
+   "bought": -8,
+   "sellBy": 22,
+   "opened": null,
+   "loc": "fridge"
+  }
+ ],
+ "locations": {
+  "fridge": {
+   "name": "Fridge",
+   "cap": 30
+  },
+  "freezer": {
+   "name": "Freezer",
+   "cap": 40
+  },
+  "pantry": {
+   "name": "Pantry",
+   "cap": 60
+  }
+ },
+ "resources": {
+  "operator": 1,
+  "hob": 2,
+  "oven": 1,
+  "sink": 1,
+  "board": 1
+ },
+ "perish": 30
+};/*@END:SEED@*/
+const KD=(()=>{const catalog={},nutr={},vol={};for(const k in ING_DATA.items){const r=ING_DATA.items[k];const c={};for(const f in r){if(f==="nutrition"||f==="vol"||f==="verify"||f==="allergen_note")continue;c[f]=r[f];}catalog[k]=c;if(r.nutrition)nutr[k]=r.nutrition;if(r.vol!=null)vol[k]=r.vol;}return{catalog,nutr,vol,trans:TRANS_DATA,library:REC_DATA.library,plan:REC_DATA.plan,inventory:SEED_DATA.inventory,seed:SEED_DATA};})();
+const APP_VERSION="2.0.0";
+function recipeAllergens(r){const s={};(r.ingredients||[]).forEach(it=>{(CATALOG[it.k].allergens||[]).forEach(a=>s[a]=1);});return Object.keys(s).sort();}
+const CATALOG=KD.catalog;
+const PREP_CLASS=KD.trans.prep_classes;
+const prepClassOf=k=>{const c=CATALOG[k];return c&&c.prepClass?PREP_CLASS[c.prepClass]:null;};
+const isPackaged=k=>!!CATALOG[k].packs;
+const PERISH=KD.seed.perish, COARSE=KD.trans.coarse;
+function toCanonical(k,q,u){const I=CATALOG[k];if(u===I.unit)return q;if(I.bridges&&I.bridges[u]!=null)return q*I.bridges[u];if(u==="each"&&I.regime==="weight"&&I.bridges.each)return q*I.bridges.each;return q;}
+function cutKeep(k,f){const cl=CATALOG[k].cutLife;if(cl==null)return CATALOG[k].keep;return Math.max(1,cl+(COARSE[f]||0));}
+function stateKeep(k,f){const I=CATALOG[k];if(f==="whole"||f==="cleaned")return I.keep;if(f==="peeled"||f==="skinned")return Math.min(I.keep,Math.max(1,(I.cutLife||I.keep)+2));return Math.min(I.keep,cutKeep(k,f));}
+function offeredForms(k){const pc=prepClassOf(k),o=["whole"];if(!pc)return o;if(pc.clean)o.push("cleaned");if(pc.peel)o.push("peeled");if(pc.deskin)o.push("skinned");(pc.forms||[]).forEach(f=>{if(o.indexOf(f)<0)o.push(f);});if(pc.juice)o.push("juiced");return o;}
+let _uid=0;const uid=p=>p+"_"+(++_uid);
+function synthPrep(k,form){const states={},procs=[],nm=CATALOG[k].name.toLowerCase();states[k]={kind:"leaf",keep:CATALOG[k].keep,leaf:k,form:"whole"};if(form==="whole")return{root:k,states,procs};const pc=prepClassOf(k);let cur=k;
+  if(pc&&pc.clean){const id=k+"_cleaned";states[id]={kind:"prep",keep:stateKeep(k,"cleaned"),leaf:k,form:"cleaned"};procs.push({id:uid("clean"),title:"Clean "+nm,trans:"clean",active:1,dur:1,consumes:[cur],produces:[id],waste:["rinse water"]});cur=id;if(form==="cleaned")return{root:cur,states,procs};}
+  if(pc&&pc.deskin&&(form==="skinned"||form==="crumbled")){const id=k+"_skinned";states[id]={kind:"prep",keep:stateKeep(k,"skinned"),leaf:k,form:"skinned"};procs.push({id:uid("deskin"),title:"Deskin "+nm,trans:"deskin",active:1,dur:1,consumes:[cur],produces:[id],waste:[nm+" casing"]});cur=id;if(form==="skinned")return{root:cur,states,procs};}
+  if(pc&&pc.peel&&form!=="zested"&&form!=="juiced"){const id=k+"_peeled";states[id]={kind:"prep",keep:stateKeep(k,"peeled"),leaf:k,form:"peeled"};procs.push({id:uid("peel"),title:"Peel "+nm,trans:"peel",active:1,dur:2,consumes:[cur],produces:[id],waste:[nm+" peelings"]});cur=id;if(form==="peeled")return{root:cur,states,procs};}
+  const verb=form==="juiced"?"Juice":form==="grated"?"Grate":form==="crumbled"?"Crumble":form==="jointed"?"Joint":"Cut";const trans=form==="juiced"?"juice":form==="grated"?"grind":form==="crumbled"?"crumble":"cut";const id=k+"_"+form;states[id]={kind:"cut",keep:stateKeep(k,form),leaf:k,form};procs.push({id:uid(form),title:verb+" "+nm+" · "+form,trans,active:1,dur:2,consumes:[cur],produces:[id],waste:form==="juiced"?[nm+" pulp"]:[]});return{root:id,states,procs};}
+const COOK_BROWNS=KD.trans.cook_browns;
+const cookOutcome=m=>{const browns=!!COOK_BROWNS[m];return{method:m||"moist",browns,crust:browns?"browned":"none"};};
+function recipeGraph(recipe){_uid=0;const g={states:{},procs:[]},roots=[];recipe.ingredients.forEach(it=>{const s=synthPrep(it.k,it.form||"whole");Object.keys(s.states).forEach(id=>{if(!g.states[id])g.states[id]=s.states[id];});s.procs.forEach(p=>g.procs.push(p));roots.push(s.root);});const out=recipe.id;g.states[out]={kind:"cooked",keep:recipe.keep||3,name:recipe.name};const o=cookOutcome(recipe.method);g.procs.push({id:uid("cook"),title:"Cook & plate · "+recipe.name+" · "+o.method+(o.browns?" (browns → crust)":" (no browning)"),trans:"cook",active:1,dur:recipe.cookMin||20,consumes:roots,produces:[out],waste:[],method:o.method,browns:o.browns,crust:o.crust});return g;}
+function topoSteps(g){const av={},out=[],rest=g.procs.slice();Object.keys(g.states).forEach(s=>{if(g.states[s].kind==="leaf")av[s]=1;});let gd=0;while(rest.length&&gd++<999){let mv=0;for(let i=0;i<rest.length;i++){if(rest[i].consumes.every(c=>av[c])){const p=rest.splice(i,1)[0];out.push(p);p.produces.forEach(o=>av[o]=1);mv=1;break;}}if(!mv){out.push(...rest);break;}}return out;}
+function keepFor(l){const I=CATALOG[l.k];return(l.opened!=null&&I.openedKeep!=null)?I.openedKeep:I.keep;}
+function effExpiry(l){const b=(l.opened!=null?l.opened:l.bought);return Math.min(l.sellBy!=null?l.sellBy:Infinity,b+keepFor(l));}
+const shortClock=l=>effExpiry(l)<PERISH||l.opened!=null;
+function bestFitPacks(need,sizes){if(need<=0)return{packs:[],total:0,leftover:0};sizes=sizes.slice().sort((a,b)=>b-a);let best=null;const cap=Math.ceil(need/Math.min(...sizes))+1;const rec=(i,c,t)=>{if(t>=need){const lo=t-need,n=c.reduce((a,b)=>a+b,0);if(!best||lo<best.leftover||(lo===best.leftover&&n<best.n))best={counts:c.slice(),total:t,leftover:lo,n};return;}if(i>=sizes.length)return;for(let x=0;x<=cap;x++){c[i]=x;rec(i+1,c,t+x*sizes[i]);if(t+x*sizes[i]>need+Math.max(...sizes))break;}c[i]=0;};rec(0,new Array(sizes.length).fill(0),0);const packs=[];best.counts.forEach((x,i)=>{for(let j=0;j<x;j++)packs.push(sizes[i]);});return{packs,total:best.total,leftover:best.leftover};}
+function planDemand(plan,lib){const d={};plan.forEach(({recipeId,day})=>{const r=lib[recipeId];if(!r)return;r.ingredients.forEach(it=>{const c=toCanonical(it.k,it.qty,it.u||it.unit);if(!d[it.k])d[it.k]={qty:0,first:Infinity};d[it.k].qty+=c;d[it.k].first=Math.min(d[it.k].first,day);});});return d;}
+function productionLots(plan,lib){const out=[];plan.forEach(({recipeId,day})=>{const r=lib[recipeId];if(r&&r.yields)r.yields.forEach(y=>out.push({id:"prod_"+recipeId+"_"+y.k,k:y.k,qty:y.qty,bought:day,sellBy:day+CATALOG[y.k].keep,opened:null,loc:"fridge",produced:true}));});return out;}
+function shoppingList(plan,inv,lib){const dem=planDemand(plan,lib),pool=inv.concat(productionLots(plan,lib)),out=[];Object.keys(dem).forEach(k=>{const need=dem[k].qty,first=dem[k].first,I=CATALOG[k];const good=pool.filter(l=>l.k===k&&effExpiry(l)>=first);const avail=good.reduce((a,l)=>a+l.qty,0);const short=Math.max(0,need-avail);let buy;if(short<=0)buy={kind:"none"};else if(I.produced)buy={kind:"short_produced"};else if(isPackaged(k)){const bf=bestFitPacks(short,I.packs);buy={kind:"packs",packs:bf.packs,leftover:+bf.leftover.toFixed(1)};}else{let q=short;q=I.regime==="count"?Math.ceil(q):Math.ceil(q/50)*50;buy={kind:"loose",qty:q};}const fromLeftover=good.some(l=>l.produced);const timing=I.produced?{when:"from_kitchen"}:(I.keep<PERISH?{when:"perishable",buyAfter:Math.max(0,first-(I.keep-1)),buyBy:first}:{when:"anytime"});out.push({k,name:I.name,group:I.group,need:+need.toFixed(1),unit:I.unit,avail:+avail.toFixed(1),shortfall:+short.toFixed(1),packaged:isPackaged(k),produced:!!I.produced,fromLeftover,buy,timing});});return out.sort((a,b)=>a.name.localeCompare(b.name));}
+function useItUp(plan,inv,lib){const fn={},dem=planDemand(plan,lib);Object.keys(dem).forEach(k=>fn[k]=dem[k].first);return inv.map(l=>({...l,name:CATALOG[l.k].name,unit:CATALOG[l.k].unit,expiry:effExpiry(l),atRisk:(fn[l.k]==null)||(effExpiry(l)<fn[l.k])})).sort((a,b)=>a.expiry-b.expiry);}
+// storage capacity (litres)
+const VOL=KD.vol;
+const LOCATIONS=KD.seed.locations;
+const volOf=k=>VOL[k]!=null?VOL[k]:0.001, defaultLoc=k=>CATALOG[k].group==="pantry"?"pantry":"fridge", lotVol=l=>l.qty*volOf(l.k);
+function storageLoad(inv){const L={fridge:0,freezer:0,pantry:0};inv.forEach(l=>{const loc=l.loc||defaultLoc(l.k);L[loc]=(L[loc]||0)+lotVol(l);});Object.keys(L).forEach(k=>L[k]=+L[k].toFixed(1));return L;}
+function fitsCheck(inv,buys){const L=storageLoad(inv);(buys||[]).forEach(b=>{const loc=defaultLoc(b.k);L[loc]=+(L[loc]+b.qty*volOf(b.k)).toFixed(1);});const over={};Object.keys(LOCATIONS).forEach(loc=>{if(L[loc]>LOCATIONS[loc].cap)over[loc]=+(L[loc]-LOCATIONS[loc].cap).toFixed(1);});return{load:L,over};}
+function buysFromShopping(sl){const out=[];sl.forEach(r=>{if(r.buy.kind==="loose")out.push({k:r.k,qty:r.buy.qty});else if(r.buy.kind==="packs")out.push({k:r.k,qty:r.buy.packs.reduce((a,b)=>a+b,0)});});return out;}
+function cookSchedule(plan,lib){return plan.slice().sort((a,b)=>a.day-b.day).map(({recipeId,day})=>{const r=lib[recipeId];if(!r)return null;const st=topoSteps(recipeGraph(r));return{day,name:r.name,steps:st,hands:st.filter(s=>s.active).reduce((a,s)=>a+s.dur,0),passive:st.filter(s=>!s.active).reduce((a,s)=>a+s.dur,0)};}).filter(Boolean);}
+function planWaste(plan,inv,lib){const streams={};plan.forEach(({recipeId})=>{const r=lib[recipeId];if(!r)return;recipeGraph(r).procs.forEach(p=>(p.waste||[]).forEach(w=>streams[w]=(streams[w]||0)+1));});const fn={},dem=planDemand(plan,lib);Object.keys(dem).forEach(k=>fn[k]=dem[k].first);const spoil=inv.filter(l=>{const e=effExpiry(l);return(fn[l.k]==null)||(e<fn[l.k]);}).map(l=>({name:CATALOG[l.k].name,qty:l.qty,unit:CATALOG[l.k].unit,expiry:effExpiry(l)}));return{streams:Object.keys(streams),spoil};}
+function exportRecipe(r){const g=recipeGraph(r);return{name:r.name,keep:r.keep,method:r.method||"moist",ingredients:r.ingredients,states:Object.fromEntries(Object.entries(g.states).map(([k,v])=>[k,{kind:v.kind,keep:v.keep}])),steps:topoSteps(g).map(p=>({title:p.title,trans:p.trans,active:!!p.active,dur:p.dur,in:p.consumes,out:p.produces,waste:p.waste||[]}))};}
+// nutrition (per canonical unit — seeded estimates)
+const NUTR=KD.nutr;
+function recipeNutrition(recipe){const t={kcal:0,p:0,c:0,f:0};recipe.ingredients.forEach(it=>{const n=NUTR[it.k];if(!n)return;const q=toCanonical(it.k,it.qty,it.u||it.unit);t.kcal+=n.kcal*q;t.p+=n.p*q;t.c+=n.c*q;t.f+=n.f*q;});Object.keys(t).forEach(k=>t[k]=Math.round(t[k]));return t;}
+function planNutrition(plan,lib){const days={},week={kcal:0,p:0,c:0,f:0};plan.forEach(({recipeId,day})=>{const r=lib[recipeId];if(!r)return;const n=recipeNutrition(r);days[day]=days[day]||{kcal:0,p:0,c:0,f:0,dishes:[]};["kcal","p","c","f"].forEach(k=>{days[day][k]+=n[k];week[k]+=n[k];});days[day].dishes.push({name:r.name,n});});return{days,week};}
+// transitions matrix for a kind (affordance ✓/✗ + forms + cook outcome)
+function transitionsFor(k){const pc=prepClassOf(k),I=CATALOG[k];const rows=[
+  {t:"clean",ok:!!(pc&&pc.clean),note:"rinse at the sink"},
+  {t:"peel",ok:!!(pc&&pc.peel),note:"remove fused skin → peelings"},
+  {t:"deskin",ok:!!(pc&&pc.deskin),note:"slip the casing off → casing waste"},
+  {t:"cut",ok:!!(pc&&pc.forms&&pc.forms.length),note:pc&&pc.forms&&pc.forms.length?"forms: "+pc.forms.join(", "):"—"},
+  {t:"grind",ok:!!(pc&&pc.grind),note:"to paste/ground"},
+  {t:"juice",ok:!!(pc&&pc.juice),note:"press to liquid"},
+  {t:"cook",ok:true,note:"method drives browning/crust"},
+];return{kind:k,name:I.name,forms:offeredForms(k),rows};}
+const PREPPABLE=Object.keys(CATALOG).filter(k=>prepClassOf(k));
+/* ============ TASK SCHEDULER (RCPSP, list-scheduling heuristic) ============ */
+// resource capacities are the algorithmic inputs
+const DEFAULT_RES=KD.seed.resources;
+const RES_MAP=KD.trans.res_map;
+function stepResource(p,recipe){if(p.trans==="cook")return (recipe.method==="dry")?"oven":"hob";return RES_MAP[p.trans]||"board";}
+function stepAttend(p,recipe){if(p.trans==="cook")return recipe.method==="fat";return true;} // prep attended; fry attended; roast/simmer passive
+function recipeSteps(recipe){const g=recipeGraph(recipe),procs=g.procs,prodBy={};procs.forEach(p=>p.produces.forEach(s=>prodBy[s]=p.id));
+  return procs.map(p=>({id:recipe.id+":"+p.id,recipe:recipe.id,rname:recipe.name,title:p.title,trans:p.trans,dur:p.dur,res:stepResource(p,recipe),attend:stepAttend(p,recipe),deps:p.consumes.map(c=>prodBy[c]).filter(Boolean).map(x=>recipe.id+":"+x)}));}
+function schedule(steps,res){res=Object.assign({},DEFAULT_RES,res||{});
+  const start={},finish={},busy={};Object.keys(res).forEach(r=>busy[r]=[]);
+  const needs=s=>{const l=[s.res];if(s.attend)l.push("operator");return l;};
+  const freeAt=(r,t,dur)=>{let c=[t];busy[r].forEach(iv=>{if(iv[1]>t)c.push(iv[1]);});c=[...new Set(c)].sort((a,b)=>a-b);
+    for(const x of c){const ov=busy[r].filter(iv=>iv[0]<x+dur&&iv[1]>x).length;if(ov<res[r])return x;}return c[c.length-1];};
+  const earliest=(s,ready)=>{let t=ready;for(let i=0;i<500;i++){let ok=true,push=t;needs(s).forEach(r=>{const f=freeAt(r,t,s.dur);if(f>t){ok=false;push=Math.max(push,f);}});if(ok)return t;t=push;}return t;};
+  const done=new Set(),pending=steps.slice();let guard=0;
+  while(pending.length&&guard++<5000){
+    let ready=pending.filter(s=>(s.deps||[]).every(d=>done.has(d)));
+    if(!ready.length){pending.forEach(s=>{start[s.id]=0;finish[s.id]=s.dur;done.add(s.id);});break;}
+    ready.forEach(s=>s._r=Math.max(0,...(s.deps||[]).map(d=>finish[d]||0)));
+    let best=null,bs=Infinity;ready.forEach(s=>{const st=earliest(s,s._r);if(st<bs||(st===bs&&s.dur>(best?best.dur:0))){best=s;bs=st;}});
+    start[best.id]=bs;finish[best.id]=bs+best.dur;needs(best).forEach(r=>busy[r].push([bs,finish[best.id]]));
+    done.add(best.id);pending.splice(pending.indexOf(best),1);}
+  const makespan=Math.max(0,...Object.values(finish));
+  const handsOn=steps.filter(s=>s.attend).reduce((a,s)=>a+s.dur,0);
+  const opIdle=makespan-handsOn;
+  return {res,start,finish,makespan,handsOn,opIdle,steps:steps.map(s=>({...s,start:start[s.id],finish:finish[s.id]}))};
+}
+function scheduleDay(plan,lib,day,res){const steps=[];plan.filter(p=>p.day===day).forEach(p=>{const r=lib[p.recipeId];if(r)steps.push(...recipeSteps(r));});return schedule(steps,res);}
+function scheduleDays(plan,lib,res){const days=[...new Set(plan.map(p=>p.day))].sort((a,b)=>a-b);return days.map(d=>({day:d,...scheduleDay(plan,lib,d,res)}));}
+
+const LIBRARY=KD.library;
+const PLAN=KD.plan;
+const INVENTORY=KD.inventory;
+const state={view:"plan",lib:JSON.parse(JSON.stringify(LIBRARY)),plan:JSON.parse(JSON.stringify(PLAN)),inv:JSON.parse(JSON.stringify(INVENTORY)),
+  build:{name:"",keep:3,cookMin:25,method:"fat",ingredients:[]},transKind:"carrot",res:{operator:1,hob:2,oven:1,sink:1,board:1},nextLot:100,nextRid:1};
+const DAYS=["·","Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const dfmt=d=>d===Infinity||d==null?"—":d<0?(-d)+"d ago":d===0?"today":"in "+d+"d";
+const TABS=[["plan","Plan"],["build","Build"],["cook","Cook schedule"],["schedule","Schedule"],["transitions","Transitions"],["inventory","Inventory"],["shop","Shopping"],["waste","Waste"],["nutrition","Nutrition"]];
+function render(){const nav=document.getElementById('nav');nav.innerHTML='';TABS.forEach(([k,l])=>{const b=el('button','tab'+(state.view===k?' on':''),l);b.onclick=()=>{state.view=k;render();};nav.appendChild(b);});
+  const m=document.getElementById('main');m.innerHTML='';({plan:vPlan,build:vBuild,cook:vCook,schedule:vSched,transitions:vTrans,inventory:vInv,shop:vShop,waste:vWaste,nutrition:vNutr})[state.view](m);}
+
+function vPlan(m){m.appendChild(el('div','hint','Assign recipes to days. A dish that yields a leftover (◆) feeds later days — it flows to the shopping list as a from-the-kitchen item.'));
+  const grid=el('div','week');for(let d=1;d<=7;d++){const col=el('div','day');col.appendChild(el('div','dl',DAYS[d]+' · day '+d));
+    state.plan.filter(p=>p.day===d).forEach(p=>{const r=state.lib[p.recipeId];const c=el('div','dchip');const alg=recipeAllergens(r);c.innerHTML='<span>'+r.name+(r.yields?' <span class="lf">◆</span>':'')+(alg.length?' <span class="alg" title="regulatory-14 allergens (seeded, verify labels)">⚠ '+alg.join(', ')+'</span>':'')+'</span>';const x=el('span','x','✕');x.onclick=()=>{state.plan=state.plan.filter(z=>z!==p);render();};c.appendChild(x);col.appendChild(c);});
+    const sel=el('select','add');sel.innerHTML='<option value="">+ dish…</option>'+Object.values(state.lib).map(r=>'<option value="'+r.id+'">'+r.name+'</option>').join('');sel.onchange=()=>{if(sel.value){state.plan.push({recipeId:sel.value,day:d});render();}};col.appendChild(sel);grid.appendChild(col);}
+  m.appendChild(grid);const prod=productionLots(state.plan,state.lib);if(prod.length){m.appendChild(el('div','flow','<b>Leftover flow:</b> '+prod.map(l=>CATALOG[l.k].name+' ('+l.qty+CATALOG[l.k].unit+', made day '+l.bought+', good til day '+effExpiry(l)+')').join(' · ')));}}
+
+function vBuild(m){m.appendChild(el('div','hint','Build from scratch: add ingredients and the form you want (the clean→peel→deskin→cut chain is synthesised). Pick a cook method (browning sets a crust). Save → it becomes plannable.'));
+  const b=state.build;const top=el('div','brow');const nm=el('input');nm.placeholder='recipe name';nm.value=b.name;nm.style.flex='1';nm.oninput=()=>b.name=nm.value;
+  const kp=el('input');kp.type='number';kp.value=b.keep;kp.style.width='62px';kp.title='keep d';kp.oninput=()=>b.keep=parseInt(kp.value,10)||3;
+  const meth=el('select');["fat","dry","moist","microwave"].forEach(x=>{const o=el('option',null,x);if(x===b.method)o.selected=1;meth.appendChild(o);});meth.onchange=()=>{b.method=meth.value;render();};
+  [el('span','lbl','Name'),nm,el('span','lbl','keep'),kp,el('span','lbl','cook'),meth].forEach(x=>top.appendChild(x));m.appendChild(top);
+  const add=el('div','brow');const ing=el('select');ing.innerHTML=Object.keys(CATALOG).filter(k=>!CATALOG[k].produced).map(k=>'<option value="'+k+'">'+CATALOG[k].name+'</option>').join('');
+  const form=el('select');const ff=()=>{form.innerHTML=offeredForms(ing.value).map(f=>'<option>'+f+'</option>').join('');};ff();ing.onchange=ff;
+  const qty=el('input');qty.type='number';qty.value=1;qty.style.width='60px';const unit=el('input');unit.style.width='58px';unit.value='each';unit.title='unit';
+  const ab=el('button','go','+ add');ab.onclick=()=>{b.ingredients.push({k:ing.value,form:form.value,qty:parseFloat(qty.value)||1,u:unit.value});render();};
+  [el('span','lbl','Ingredient'),ing,form,qty,unit,ab].forEach(x=>add.appendChild(x));m.appendChild(add);
+  if(b.ingredients.length){const ul=el('div','ings');b.ingredients.forEach((it,i)=>{const c=el('span','chip');c.innerHTML=it.qty+it.u+' '+CATALOG[it.k].name+(it.form&&it.form!=="whole"?' · '+it.form:'');const x=el('span','x','✕');x.onclick=()=>{b.ingredients.splice(i,1);render();};c.appendChild(x);ul.appendChild(c);});m.appendChild(ul);}
+  const sv=el('button','save','✓ Save to library');sv.disabled=!b.name||!b.ingredients.length;sv.onclick=()=>{const id="r"+(state.nextRid++);state.lib[id]={id,name:b.name,keep:b.keep,cookMin:b.cookMin,method:b.method,ingredients:b.ingredients.slice()};state.build={name:"",keep:3,cookMin:25,method:"fat",ingredients:[]};alert('Saved — now in the Plan dropdown.');render();};m.appendChild(sv);
+  if(b.ingredients.length){const r={id:"_pv",name:b.name||"preview",keep:b.keep,method:b.method,ingredients:b.ingredients};const g=recipeGraph(r);const steps=topoSteps(g);
+    m.appendChild(el('div','ph','Synthesised steps ('+steps.length+')'));const list=el('div');steps.forEach((p,i)=>{const w=p.waste&&p.waste.length?' <span class="wst">waste·'+p.waste.join(', ')+'</span>':'';list.appendChild(el('div','step','<span class="n">'+(i+1)+'</span><span><b>'+p.title+'</b> <span class="mu mono">'+(p.active?'hands-on':'passive')+'·'+p.dur+'m'+w+'</span></span>'));});m.appendChild(list);
+    const xb=el('button','go','⧉ Export recipe JSON');xb.style.marginTop='8px';xb.onclick=()=>{const j=JSON.stringify(exportRecipe(r),null,1);navigator.clipboard&&navigator.clipboard.writeText(j);xb.textContent='✓ copied';setTimeout(()=>xb.textContent='⧉ Export recipe JSON',1200);};m.appendChild(xb);}
+  m.appendChild(el('div','ph','Recipe library ('+Object.keys(state.lib).length+')'));const lib=el('div','ings');Object.values(state.lib).forEach(r=>lib.appendChild(el('span','chip lib',r.name+(r.yields?' ◆':''))));m.appendChild(lib);}
+
+function vCook(m){m.appendChild(el('div','hint','The week\'s cooking, ordered by day — each dish\'s synthesised steps, hands-on vs passive minutes, and its browning method.'));
+  const cs=cookSchedule(state.plan,state.lib);if(!cs.length){m.appendChild(el('div','hint','Nothing planned.'));return;}
+  cs.forEach(d=>{const box=el('div','rec');box.innerHTML='<h3>'+DAYS[d.day]+' · '+d.name+' <span class="v">'+d.hands+'m hands-on · '+d.passive+'m passive</span></h3>';
+    d.steps.forEach((p,i)=>{const w=p.waste&&p.waste.length?' <span class="wst">waste·'+p.waste.join(', ')+'</span>':'';const cr=p.crust?' <span class="badge '+(p.browns?'pack':'fresh')+'">crust: '+p.crust+'</span>':'';box.appendChild(el('div','step','<span class="n">'+(i+1)+'</span><span><b>'+p.title+'</b> <span class="mu mono">'+(p.active?'hands-on':'passive')+'·'+p.dur+'m'+w+'</span>'+cr+'</span>'));});m.appendChild(box);});}
+
+function vTrans(m){m.appendChild(el('div','hint','Which transitions an ingredient admits, computed from its prep-class — peel vs deskin, cuttable forms, grind/juice, and the cook method that browns it. Pick a kind:'));
+  const sel=el('select','add');sel.style.maxWidth='200px';sel.innerHTML=PREPPABLE.map(k=>'<option value="'+k+'"'+(k===state.transKind?' selected':'')+'>'+CATALOG[k].name+'</option>').join('');sel.onchange=()=>{state.transKind=sel.value;render();};m.appendChild(sel);
+  const t=transitionsFor(state.transKind);
+  const tbl=el('table');tbl.innerHTML='<thead><tr><th>Transition</th><th>Admitted</th><th>Detail</th></tr></thead>';const tb=el('tbody');
+  t.rows.forEach(r=>{const tr=el('tr');tr.innerHTML='<td class="mono">'+r.t+'</td><td>'+(r.ok?'<span class="badge fresh">✓</span>':'<span class="badge short">✗</span>')+'</td><td class="mu">'+r.note+'</td>';tb.appendChild(tr);});tbl.appendChild(tb);m.appendChild(tbl);
+  m.appendChild(el('div','ph','Reachable prep forms'));const fc=el('div','ings');t.forms.forEach(f=>fc.appendChild(el('span','chip',f+' <span class="mu mono">'+stateKeep(state.transKind,f)+'d</span>')));m.appendChild(fc);
+  m.appendChild(el('div','flow mu','Same affordance logic the recipe builder and shopping engine use — so the matrix can\'t drift from what the model enforces.'));}
+
+function bars(load){const w=el('div');Object.keys(LOCATIONS).forEach(loc=>{const cap=LOCATIONS[loc].cap,used=load[loc]||0,pct=Math.min(100,Math.round(used/cap*100)),over=used>cap;
+  const row=el('div','barrow');row.innerHTML='<span class="bl">'+LOCATIONS[loc].name+'</span><span class="bar"><i style="width:'+pct+'%;background:'+(over?'var(--warn)':'linear-gradient(90deg,var(--sage),var(--butter))')+'"></i></span><span class="bd mono">'+used.toFixed(1)+'/'+cap+'L'+(over?' ⚠':'')+'</span>';w.appendChild(row);});return w;}
+
+function vInv(m){m.appendChild(el('div','hint','Lots — each its own buy date and sell-by. Expiry is the earlier of the two; opening flips a pack to the short clock.'));
+  const t=el('table');t.innerHTML='<thead><tr><th>Ingredient</th><th class="num">Qty</th><th>Bought</th><th>Sell-by</th><th>State</th><th>Loc</th><th>Expires</th><th></th></tr></thead>';const tb=el('tbody');
+  state.inv.forEach(l=>{const tr=el('tr');tr.innerHTML='<td>'+CATALOG[l.k].name+'</td><td class="num">'+l.qty+' '+CATALOG[l.k].unit+'</td><td class="mono">'+dfmt(l.bought)+'</td><td class="mono">'+dfmt(l.sellBy)+'</td><td>'+(l.opened!=null?'<span class="badge open">opened</span>':'<span class="mu mono">sealed</span>')+'</td><td class="mu mono">'+(l.loc||defaultLoc(l.k))+'</td><td class="mono">'+dfmt(effExpiry(l))+(shortClock(l)?' <span class="badge short">short</span>':'')+'</td>';const td=el('td');const x=el('span','x','✕');x.onclick=()=>{state.inv=state.inv.filter(z=>z.id!==l.id);render();};td.appendChild(x);tr.appendChild(td);tb.appendChild(tr);});t.appendChild(tb);m.appendChild(t);
+  const add=el('div','brow');const sel=el('select');sel.innerHTML=Object.keys(CATALOG).filter(k=>!CATALOG[k].produced).map(k=>'<option value="'+k+'">'+CATALOG[k].name+'</option>').join('');const q=el('input');q.type='number';q.value=400;q.style.width='66px';const bo=el('input');bo.type='number';bo.value=0;bo.style.width='66px';bo.title='bought (d, − ago)';const sb=el('input');sb.type='number';sb.value=7;sb.style.width='66px';sb.title='sell-by in d';const op=el('input');op.type='checkbox';const opl=el('label');opl.appendChild(op);opl.appendChild(document.createTextNode(' opened'));const go=el('button','go','+ lot');go.onclick=()=>{state.inv.push({id:++state.nextLot,k:sel.value,qty:parseFloat(q.value)||0,bought:parseInt(bo.value,10)||0,sellBy:parseInt(sb.value,10),opened:op.checked?(parseInt(bo.value,10)||0):null,loc:defaultLoc(sel.value)});render();};
+  [el('span','lbl','Add lot'),sel,q,bo,sb,opl,go].forEach(x=>add.appendChild(x));m.appendChild(add);
+  m.appendChild(el('div','ph','Storage capacity (litres)'));m.appendChild(bars(storageLoad(state.inv)));
+  const uu=useItUp(state.plan,state.inv,state.lib);m.appendChild(el('div','ph','Use it up — by expiry, flagged if it spoils before the plan needs it'));
+  const t2=el('table');t2.innerHTML='<thead><tr><th>Lot</th><th class="num">Qty</th><th>Expires</th><th>Status</th></tr></thead>';const tb2=el('tbody');uu.forEach(l=>{const tr=el('tr',l.atRisk?'risk':'');tr.innerHTML='<td>'+l.name+'</td><td class="num">'+l.qty+' '+l.unit+'</td><td class="mono">'+dfmt(l.expiry)+'</td><td>'+(l.atRisk?'<span class="badge short">use it up</span>':'<span class="mu mono">covered</span>')+'</td>';tb2.appendChild(tr);});t2.appendChild(tb2);m.appendChild(t2);}
+
+function vShop(m){m.appendChild(el('div','hint','Live from the plan, netted against inventory and the leftovers it produces. Perishables timed late, packaged best-fit, leftovers from the kitchen.'));
+  const sl=shoppingList(state.plan,state.inv,state.lib);const buy=sl.filter(r=>r.buy.kind==="loose"||r.buy.kind==="packs");
+  const fc=fitsCheck(state.inv,buysFromShopping(sl));if(Object.keys(fc.over).length){m.appendChild(el('div','warn','⚠ Won\'t all fit: '+Object.entries(fc.over).map(([l,v])=>LOCATIONS[l].name+' over by '+v+'L').join(', ')+'. Buy later/smaller, or free space.'));}
+  const kitchen=sl.filter(r=>r.timing.when==="from_kitchen"),covered=sl.filter(r=>r.buy.kind==="none"&&r.timing.when!=="from_kitchen");
+  const fresh=buy.filter(r=>r.timing.when==="perishable"),pantry=buy.filter(r=>r.timing.when==="anytime");
+  const cell=r=>{if(r.buy.kind==="loose")return r.buy.qty+' '+r.unit;const c={};r.buy.packs.forEach(p=>c[p]=(c[p]||0)+1);return '<span class="badge pack">pack</span> '+Object.entries(c).map(([s,n])=>n+'×'+s+(CATALOG[r.k].packLabel||r.unit)).join(' + ')+(r.buy.leftover>0?'<span class="lo">'+r.buy.leftover+r.unit+' left</span>':'');};
+  const tbl=(rows,head)=>{if(!rows.length)return;m.appendChild(el('div','ph',head));const t=el('table');t.innerHTML='<thead><tr><th>Ingredient</th><th class="num">Need</th><th class="num">Have</th><th>Buy</th><th>When</th></tr></thead>';const tb=el('tbody');rows.forEach(r=>{const tr=el('tr');const when=r.timing.when==="perishable"?'<span class="mu mono">buy in '+r.timing.buyAfter+'–'+r.timing.buyBy+'d</span>':'<span class="mu mono">anytime</span>';tr.innerHTML='<td>'+r.name+(r.packaged?'':' <span class="badge fresh">loose</span>')+'</td><td class="num">'+r.need+' '+r.unit+'</td><td class="num">'+r.avail+'</td><td>'+cell(r)+'</td><td>'+when+'</td>';tb.appendChild(tr);});t.appendChild(tb);m.appendChild(t);};
+  if(!buy.length&&!kitchen.length){m.appendChild(el('div','hint','Nothing planned.'));return;}
+  tbl(fresh,"Perishable — buy late");tbl(pantry,"Packaged & pantry — anytime");
+  if(kitchen.length){m.appendChild(el('div','ph','From the kitchen — no buy'));m.appendChild(el('div','flow',kitchen.map(r=>r.name+' <span class="badge lf">'+(r.shortfall>0?'⚠ leftover short':'from a planned dish')+'</span>').join(' · ')));}
+  if(covered.length){m.appendChild(el('div','ph','Covered by stock'));m.appendChild(el('div','flow mu',covered.map(r=>r.name).join(' · ')));}}
+
+function vWaste(m){m.appendChild(el('div','hint','Two kinds of waste: prep by-products the recipes generate, and stock projected to spoil before the plan draws it.'));
+  const w=planWaste(state.plan,state.inv,state.lib);
+  m.appendChild(el('div','ph','Prep streams from the planned week'));m.appendChild(el('div','ings',''));const ws=el('div','ings');(w.streams.length?w.streams:["— none —"]).forEach(s=>ws.appendChild(el('span','chip',s)));m.appendChild(ws);
+  m.appendChild(el('div','ph','Projected spoilage'));if(!w.spoil.length){m.appendChild(el('div','flow mu','Nothing in stock will spoil before the plan needs it.'));}else{const t=el('table');t.innerHTML='<thead><tr><th>Lot</th><th class="num">Qty</th><th>Expires</th></tr></thead>';const tb=el('tbody');w.spoil.forEach(l=>{const tr=el('tr','risk');tr.innerHTML='<td>'+l.name+'</td><td class="num">'+l.qty+' '+l.unit+'</td><td class="mono">'+dfmt(l.expiry)+'</td>';tb.appendChild(tr);});t.appendChild(tb);m.appendChild(t);}}
+
+function vNutr(m){m.appendChild(el('div','hint','Per-dish and per-week macros, folded from seeded per-ingredient values over the recipe quantities. These are rough estimates — calibrate before trusting.'));
+  const pn=planNutrition(state.plan,state.lib);const W=pn.week;
+  const grid=el('div','stat-grid');const stat=(v,k)=>{const s=el('div','stat');s.innerHTML='<div class="sv">'+v+'</div><div class="sk">'+k+'</div>';return s;};
+  grid.appendChild(stat(W.kcal,'kcal · week'));grid.appendChild(stat(W.p+'g','protein'));grid.appendChild(stat(W.c+'g','carbs'));grid.appendChild(stat(W.f+'g','fat'));m.appendChild(grid);
+  m.appendChild(el('div','ph','By dish'));const t=el('table');t.innerHTML='<thead><tr><th>Day</th><th>Dish</th><th class="num">kcal</th><th class="num">P</th><th class="num">C</th><th class="num">F</th></tr></thead>';const tb=el('tbody');
+  Object.keys(pn.days).sort((a,b)=>a-b).forEach(d=>{pn.days[d].dishes.forEach(dh=>{const tr=el('tr');tr.innerHTML='<td class="mono">'+DAYS[d]+'</td><td>'+dh.name+'</td><td class="num">'+dh.n.kcal+'</td><td class="num">'+dh.n.p+'</td><td class="num">'+dh.n.c+'</td><td class="num">'+dh.n.f+'</td>';tb.appendChild(tr);});});t.appendChild(tb);m.appendChild(t);
+  m.appendChild(el('div','flow mu','No micronutrient or RDA modelling — calories and the three macros only, from seeded estimates.'));}
+
+function vSched(m){m.appendChild(el('div','hint','Resource-constrained schedule (RCPSP, greedy list-scheduling). The capacities below are the algorithmic inputs — change them and the makespan re-solves. Passive steps (roast, simmer) hold a hob/oven but free your hands, so the next dish\'s prep overlaps.'));
+  const inp=el('div','brow');[["operator","cooks"],["hob","hobs"],["oven","oven"],["sink","sinks"],["board","boards"]].forEach(([k,lbl])=>{const w=el('span','resin');const i=el('input');i.type='number';i.min='0';i.value=state.res[k];i.style.width='50px';i.onchange=()=>{state.res[k]=Math.max(0,parseInt(i.value,10)||0);render();};w.appendChild(document.createTextNode(lbl+' '));w.appendChild(i);inp.appendChild(w);});m.appendChild(inp);
+  const days=[...new Set(state.plan.map(p=>p.day))].sort((a,b)=>a-b);if(!days.length){m.appendChild(el('div','hint','Nothing planned.'));return;}
+  const LANES=["operator","hob","oven","sink","board"],LCOL={operator:"var(--butter)",hob:"var(--rust)",oven:"var(--plum)",sink:"var(--sage)",board:"var(--sage)"};
+  days.forEach(day=>{const sch=scheduleDay(state.plan,state.lib,day,state.res);
+    const head=el('div','rec');head.innerHTML='<h3>'+DAYS[day]+' · day '+day+' <span class="v">makespan '+sch.makespan+'m · hands-on '+sch.handsOn+'m · idle '+Math.max(0,sch.opIdle)+'m</span></h3>';m.appendChild(head);
+    const scale=Math.max(2,Math.min(7,Math.floor(560/Math.max(30,sch.makespan))));const g=el('div','gantt');
+    LANES.forEach(lane=>{const used=sch.steps.filter(s=>s.res===lane||(lane==="operator"&&s.attend));if(lane!=="operator"&&!used.length)return;
+      const row=el('div','lane');row.appendChild(el('div','lname',lane));const track=el('div','track');track.style.width=(sch.makespan*scale+2)+'px';
+      used.forEach(s=>{const b=el('div','blk');b.style.left=(s.start*scale)+'px';b.style.width=Math.max(9,s.dur*scale)+'px';b.style.background=LCOL[lane];b.title=s.title+' ('+s.start+'–'+s.finish+'m)';b.innerHTML='<span>'+s.rname.split(' ')[0]+'·'+s.trans+'</span>';track.appendChild(b);});
+      row.appendChild(track);g.appendChild(row);});m.appendChild(g);});
+  m.appendChild(el('div','flow mu','Greedy parallel schedule-generation: each step placed earliest-feasible given precedence and the capacities above. Feasible and capacity-correct (not guaranteed makespan-optimal). Durations are seeded estimates.'));}
+render();
+
+</script></body></html>

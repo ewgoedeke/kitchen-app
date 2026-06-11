@@ -1,0 +1,19 @@
+name: ci
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build (splice data packs into dist)
+        run: python3 src/build.py
+      - name: Fail if build changed the committed artifact
+        run: git diff --exit-code dist/kitchen_app.html
+      - name: Regression suite
+        run: cd test && node test.js

@@ -1,0 +1,93 @@
+{
+ "schema": "kitchen.seed_state/1",
+ "version": 1,
+ "updated": "2026-06-11",
+ "_note": "Session-churny seed data, kept apart from the reusable catalog: starting inventory lots (day-relative), storage locations & capacities (litres), default resource pool, perishable horizon (days).",
+ "inventory": [
+  {
+   "id": 1,
+   "k": "oil",
+   "qty": 480,
+   "bought": -40,
+   "sellBy": 500,
+   "opened": -40,
+   "loc": "pantry"
+  },
+  {
+   "id": 2,
+   "k": "tinned_tomato",
+   "qty": 400,
+   "bought": -20,
+   "sellBy": 520,
+   "opened": null,
+   "loc": "pantry"
+  },
+  {
+   "id": 3,
+   "k": "maize_meal",
+   "qty": 1000,
+   "bought": -30,
+   "sellBy": 335,
+   "opened": null,
+   "loc": "pantry"
+  },
+  {
+   "id": 4,
+   "k": "garlic",
+   "qty": 8,
+   "bought": -12,
+   "sellBy": 48,
+   "opened": null,
+   "loc": "pantry"
+  },
+  {
+   "id": 5,
+   "k": "onion",
+   "qty": 3,
+   "bought": -5,
+   "sellBy": 25,
+   "opened": null,
+   "loc": "pantry"
+  },
+  {
+   "id": 6,
+   "k": "stock",
+   "qty": 1000,
+   "bought": -15,
+   "sellBy": 350,
+   "opened": null,
+   "loc": "pantry"
+  },
+  {
+   "id": 7,
+   "k": "butter",
+   "qty": 250,
+   "bought": -8,
+   "sellBy": 22,
+   "opened": null,
+   "loc": "fridge"
+  }
+ ],
+ "locations": {
+  "fridge": {
+   "name": "Fridge",
+   "cap": 30
+  },
+  "freezer": {
+   "name": "Freezer",
+   "cap": 40
+  },
+  "pantry": {
+   "name": "Pantry",
+   "cap": 60
+  }
+ },
+ "resources": {
+  "operator": 1,
+  "hob": 2,
+  "oven": 1,
+  "sink": 1,
+  "board": 1
+ },
+ "perish": 30
+}

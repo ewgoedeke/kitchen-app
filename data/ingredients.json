@@ -1,0 +1,575 @@
+{
+ "schema": "kitchen.ingredients/1",
+ "version": 1,
+ "updated": "2026-06-11",
+ "_note": "Unified ingredient catalog. One record per item: identity, purchasing (regime/unit/bridges/packs), keep model (keep/openedKeep/cutLife; days), storage (store/cond/temperMin \u2014 feeds plan items A & R), facets (src/variety/part/treat \u2014 feeds item S), regulatory-14 allergens, nutrition per canonical unit, vol in litres per canonical unit. ALL keep-lives, nutrition and allergen values are seeded estimates: verify:true until cited against a real authority (plan \u00a70.6). Never fabricate citations \u2014 fill src when verified.",
+ "allergen_vocab": [
+  "celery",
+  "cereals_gluten",
+  "crustaceans",
+  "eggs",
+  "fish",
+  "lupin",
+  "milk",
+  "molluscs",
+  "mustard",
+  "nuts",
+  "peanuts",
+  "sesame",
+  "soya",
+  "sulphites"
+ ],
+ "items": {
+  "onion": {
+   "name": "Onion",
+   "group": "veg",
+   "regime": "count",
+   "unit": "each",
+   "keep": 30,
+   "prepClass": "bulb",
+   "bridges": {
+    "g": 0.006666666666666667
+   },
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "bulb",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 60,
+    "p": 1.7,
+    "c": 14,
+    "f": 0.1
+   },
+   "vol": 0.2,
+   "verify": true
+  },
+  "garlic": {
+   "name": "Garlic",
+   "group": "veg",
+   "regime": "count",
+   "unit": "clove",
+   "keep": 60,
+   "packs": [
+    10
+   ],
+   "packLabel": "bulb",
+   "prepClass": "garlic_bulb",
+   "bridges": {},
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "bulb",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 4,
+    "p": 0.2,
+    "c": 1,
+    "f": 0
+   },
+   "vol": 0.02,
+   "verify": true
+  },
+  "carrot": {
+   "name": "Carrot",
+   "group": "veg",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 21,
+   "cutLife": 3,
+   "prepClass": "root_veg",
+   "bridges": {
+    "each": 80
+   },
+   "store": "fridge",
+   "cond": "chilled",
+   "facets": {
+    "src": "plant",
+    "part": "root",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 0.41,
+    "p": 0.009,
+    "c": 0.096,
+    "f": 0.002
+   },
+   "vol": 0.0012,
+   "verify": true
+  },
+  "celery": {
+   "name": "Celery",
+   "group": "veg",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 14,
+   "cutLife": 3,
+   "prepClass": "stalk_veg",
+   "bridges": {
+    "stick": 40
+   },
+   "store": "fridge",
+   "cond": "chilled",
+   "facets": {
+    "src": "plant",
+    "part": "stalk",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [
+    "celery"
+   ],
+   "allergen_note": "celery is itself one of the regulatory 14",
+   "nutrition": {
+    "kcal": 0.16,
+    "p": 0.007,
+    "c": 0.03,
+    "f": 0.002
+   },
+   "vol": 0.0015,
+   "verify": true
+  },
+  "potato": {
+   "name": "Potato",
+   "group": "veg",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 30,
+   "cutLife": 1,
+   "prepClass": "root_veg",
+   "bridges": {
+    "each": 200
+   },
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "tuber",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 0.77,
+    "p": 0.02,
+    "c": 0.17,
+    "f": 0.001
+   },
+   "vol": 0.0011,
+   "verify": true
+  },
+  "pepper": {
+   "name": "Red pepper",
+   "group": "veg",
+   "regime": "count",
+   "unit": "each",
+   "keep": 10,
+   "prepClass": "fruit_veg",
+   "bridges": {},
+   "store": "fridge",
+   "cond": "chilled",
+   "facets": {
+    "src": "plant",
+    "part": "fruit",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 30,
+    "p": 1,
+    "c": 7,
+    "f": 0.3
+   },
+   "vol": 0.25,
+   "verify": true
+  },
+  "beef_mince": {
+   "name": "Beef mince",
+   "group": "protein",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 2,
+   "packs": [
+    500
+   ],
+   "prepClass": "mince",
+   "bridges": {},
+   "store": "fridge",
+   "cond": "fridge_cold",
+   "temperMin": 30,
+   "facets": {
+    "src": "beef",
+    "part": "muscle",
+    "treat": [
+     "minced",
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 2.5,
+    "p": 0.18,
+    "c": 0,
+    "f": 0.2
+   },
+   "vol": 0.0011,
+   "verify": true
+  },
+  "chicken": {
+   "name": "Whole chicken",
+   "group": "protein",
+   "regime": "count",
+   "unit": "each",
+   "keep": 2,
+   "prepClass": "poultry_bird",
+   "bridges": {
+    "g": 0.000625
+   },
+   "store": "fridge",
+   "cond": "fridge_cold",
+   "facets": {
+    "src": "chicken",
+    "part": "whole_bird",
+    "treat": [
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 1900,
+    "p": 350,
+    "c": 0,
+    "f": 50
+   },
+   "vol": 2,
+   "verify": true
+  },
+  "chorizo": {
+   "name": "Chorizo",
+   "group": "protein",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 21,
+   "packs": [
+    225
+   ],
+   "prepClass": "sausage",
+   "bridges": {},
+   "store": "fridge",
+   "cond": "chilled",
+   "facets": {
+    "src": "pork",
+    "part": "muscle",
+    "treat": [
+     "cured",
+     "smoked"
+    ]
+   },
+   "allergens": [],
+   "allergen_note": "VERIFY label: cured sausage often declares milk and/or sulphites",
+   "nutrition": {
+    "kcal": 4.5,
+    "p": 0.24,
+    "c": 0.02,
+    "f": 0.38
+   },
+   "vol": 0.0012,
+   "verify": true
+  },
+  "wors": {
+   "name": "Boerewors",
+   "group": "protein",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 3,
+   "packs": [
+    500
+   ],
+   "prepClass": "sausage",
+   "bridges": {},
+   "store": "fridge",
+   "cond": "fridge_cold",
+   "facets": {
+    "src": "beef",
+    "part": "muscle",
+    "treat": [
+     "minced",
+     "spiced",
+     "raw"
+    ]
+   },
+   "allergens": [],
+   "allergen_note": "VERIFY label: may contain sulphites/coriander blends",
+   "nutrition": {
+    "kcal": 3.3,
+    "p": 0.15,
+    "c": 0.01,
+    "f": 0.3
+   },
+   "vol": 0.0012,
+   "verify": true
+  },
+  "tinned_tomato": {
+   "name": "Tinned tomato",
+   "group": "pantry",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 540,
+   "packs": [
+    400
+   ],
+   "openedKeep": 4,
+   "bridges": {},
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "fruit",
+    "treat": [
+     "canned"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 0.18,
+    "p": 0.009,
+    "c": 0.04,
+    "f": 0.002
+   },
+   "vol": 0.001,
+   "verify": true
+  },
+  "tomato_paste": {
+   "name": "Tomato paste",
+   "group": "pantry",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 365,
+   "packs": [
+    200
+   ],
+   "openedKeep": 14,
+   "bridges": {
+    "tbsp": 15
+   },
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "fruit",
+    "treat": [
+     "concentrated"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 0.82,
+    "p": 0.04,
+    "c": 0.19,
+    "f": 0.005
+   },
+   "vol": 0.001,
+   "verify": true
+  },
+  "stock": {
+   "name": "Beef stock",
+   "group": "pantry",
+   "regime": "volume",
+   "unit": "ml",
+   "keep": 365,
+   "packs": [
+    500,
+    1000
+   ],
+   "openedKeep": 5,
+   "bridges": {},
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "beef",
+    "treat": [
+     "concentrated"
+    ]
+   },
+   "allergens": [],
+   "allergen_note": "VERIFY label: stock commonly contains celery",
+   "nutrition": {
+    "kcal": 0.04,
+    "p": 0.005,
+    "c": 0.005,
+    "f": 0.001
+   },
+   "vol": 0.001,
+   "verify": true
+  },
+  "oil": {
+   "name": "Olive oil",
+   "group": "pantry",
+   "regime": "volume",
+   "unit": "ml",
+   "keep": 540,
+   "packs": [
+    750
+   ],
+   "openedKeep": 180,
+   "bridges": {
+    "tbsp": 15
+   },
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "fruit",
+    "treat": [
+     "pressed"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 8.4,
+    "p": 0,
+    "c": 0,
+    "f": 0.92
+   },
+   "vol": 0.001,
+   "verify": true
+  },
+  "red_wine": {
+   "name": "Red wine",
+   "group": "pantry",
+   "regime": "volume",
+   "unit": "ml",
+   "keep": 365,
+   "packs": [
+    750
+   ],
+   "openedKeep": 5,
+   "bridges": {},
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "fruit",
+    "treat": [
+     "fermented"
+    ]
+   },
+   "allergens": [
+    "sulphites"
+   ],
+   "allergen_note": "VERIFY: nearly all wine exceeds the 10 mg/kg SO2 threshold",
+   "nutrition": {
+    "kcal": 0.85,
+    "p": 0,
+    "c": 0.026,
+    "f": 0
+   },
+   "vol": 0.001,
+   "verify": true
+  },
+  "maize_meal": {
+   "name": "Maize meal",
+   "group": "pantry",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 365,
+   "packs": [
+    1000
+   ],
+   "bridges": {},
+   "store": "pantry",
+   "cond": "ambient",
+   "facets": {
+    "src": "plant",
+    "part": "grain",
+    "treat": [
+     "milled"
+    ]
+   },
+   "allergens": [],
+   "allergen_note": "VERIFY mill cross-contamination (gluten)",
+   "nutrition": {
+    "kcal": 3.6,
+    "p": 0.07,
+    "c": 0.79,
+    "f": 0.018
+   },
+   "vol": 0.0012,
+   "verify": true
+  },
+  "butter": {
+   "name": "Butter",
+   "group": "pantry",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 30,
+   "packs": [
+    250
+   ],
+   "openedKeep": 21,
+   "bridges": {},
+   "store": "fridge",
+   "cond": "chilled",
+   "facets": {
+    "src": "dairy",
+    "treat": [
+     "churned"
+    ]
+   },
+   "allergens": [
+    "milk"
+   ],
+   "nutrition": {
+    "kcal": 7.2,
+    "p": 0.009,
+    "c": 0.001,
+    "f": 0.81
+   },
+   "vol": 0.0011,
+   "verify": true
+  },
+  "roast_chicken_leftover": {
+   "name": "Roast chicken (leftover)",
+   "group": "produced",
+   "regime": "weight",
+   "unit": "g",
+   "keep": 3,
+   "produced": true,
+   "bridges": {},
+   "store": "fridge",
+   "cond": "chilled",
+   "facets": {
+    "src": "chicken",
+    "treat": [
+     "cooked"
+    ]
+   },
+   "allergens": [],
+   "nutrition": {
+    "kcal": 2,
+    "p": 0.25,
+    "c": 0,
+    "f": 0.11
+   },
+   "vol": 0.0015,
+   "verify": true
+  }
+ }
+}

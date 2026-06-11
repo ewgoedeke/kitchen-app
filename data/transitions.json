@@ -1,0 +1,184 @@
+{
+ "schema": "kitchen.transitions/1",
+ "version": 1,
+ "updated": "2026-06-11",
+ "_note": "How ingredients move between states. prep_classes gate which transitions exist (structural, not name-string \u2014 plan \u00a70.4). coarse offsets adjust cut keep-life by coarseness. res_map binds transition\u2192station; cook_browns binds method\u2192browning. group_exceptions seeds plan item T (smart prep grouping): items that must break a like-cut batch, with reasons.",
+ "prep_classes": {
+  "root_veg": {
+   "clean": 1,
+   "peel": 1,
+   "forms": [
+    "chunked",
+    "sliced",
+    "diced",
+    "grated"
+   ]
+  },
+  "bulb": {
+   "clean": 1,
+   "peel": 1,
+   "forms": [
+    "sliced",
+    "diced",
+    "grated"
+   ]
+  },
+  "garlic_bulb": {
+   "clean": 1,
+   "peel": 1,
+   "grind": 1,
+   "forms": [
+    "sliced",
+    "diced",
+    "grated"
+   ]
+  },
+  "stalk_veg": {
+   "clean": 1,
+   "forms": [
+    "sliced",
+    "diced",
+    "chunked"
+   ]
+  },
+  "fruit_veg": {
+   "clean": 1,
+   "forms": [
+    "chunked",
+    "sliced",
+    "diced"
+   ]
+  },
+  "citrus": {
+   "clean": 1,
+   "juice": 1,
+   "forms": [
+    "sliced",
+    "zested"
+   ]
+  },
+  "meat_cut": {
+   "forms": [
+    "sliced",
+    "chunked",
+    "diced"
+   ]
+  },
+  "poultry_bird": {
+   "forms": [
+    "jointed",
+    "sliced"
+   ]
+  },
+  "sausage": {
+   "deskin": 1,
+   "forms": [
+    "sliced",
+    "chunked",
+    "diced",
+    "crumbled"
+   ]
+  },
+  "mince": {
+   "forms": []
+  }
+ },
+ "coarse": {
+  "chunked": 2,
+  "sliced": 1,
+  "diced": 0,
+  "grated": -1,
+  "zested": -1,
+  "juiced": -1,
+  "crumbled": 0,
+  "jointed": 1
+ },
+ "res_map": {
+  "clean": "sink",
+  "peel": "board",
+  "cut": "board",
+  "grind": "board",
+  "deskin": "board",
+  "juice": "board",
+  "crumble": "board"
+ },
+ "cook_browns": {
+  "dry": 1,
+  "fat": 1,
+  "moist": 0,
+  "microwave": 0
+ },
+ "verbs": {
+  "clean": {
+   "station": "sink",
+   "dur": 1,
+   "waste": [
+    "rinse water"
+   ]
+  },
+  "peel": {
+   "station": "board",
+   "dur": 2,
+   "optional": true,
+   "waste": [
+    "peelings"
+   ]
+  },
+  "deskin": {
+   "station": "board",
+   "dur": 1,
+   "waste": [
+    "casing"
+   ]
+  },
+  "cut": {
+   "station": "board",
+   "dur": 2
+  },
+  "grind": {
+   "station": "board",
+   "dur": 2
+  },
+  "juice": {
+   "station": "board",
+   "dur": 2,
+   "waste": [
+    "pulp"
+   ]
+  },
+  "crumble": {
+   "station": "board",
+   "dur": 2
+  },
+  "cook": {
+   "station": "hob_or_oven"
+  }
+ },
+ "group_exceptions": [
+  {
+   "k": "garlic",
+   "rule": "grind_not_dice",
+   "why": "crushed via grind, not batched with the dicing pass"
+  },
+  {
+   "k": "beef_mince",
+   "rule": "meat_board",
+   "why": "raw meat on a separate board; never grouped with veg cuts"
+  },
+  {
+   "k": "chicken",
+   "rule": "meat_board",
+   "why": "raw poultry on a separate board + sanitise after"
+  },
+  {
+   "k": "wors",
+   "rule": "meat_board",
+   "why": "raw sausage on the meat board"
+  },
+  {
+   "k": "potato",
+   "rule": "opt_peel_lever",
+   "why": "peel choice flips keep-life (skin-on keeps longer) \u2014 group only within the chosen route"
+  }
+ ]
+}
