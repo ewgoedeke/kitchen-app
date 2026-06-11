@@ -545,6 +545,42 @@
    "vol": 0.0011,
    "verify": true
   },
+  "egg": {
+   "name": "Egg",
+   "group": "protein",
+   "regime": "count",
+   "unit": "each",
+   "keep": 28,
+   "packs": [
+    6,
+    12
+   ],
+   "packLabel": "box",
+   "bridges": {},
+   "store": "fridge",
+   "cond": "chilled",
+   "temperMin": 20,
+   "facets": {
+    "src": "poultry",
+    "part": "whole",
+    "treat": [
+     "raw",
+     "in_shell"
+    ]
+   },
+   "allergens": [
+    "eggs"
+   ],
+   "nutrition": {
+    "kcal": 155,
+    "p": 13,
+    "c": 1.1,
+    "f": 11
+   },
+   "vol": 0.06,
+   "verify": true,
+   "_note": "Physics-demo ingredient: in-shell τ lag in simmer bath (kinetics v2.1). keep/nutrition seeded estimates."
+  },
   "roast_chicken_leftover": {
    "name": "Roast chicken (leftover)",
    "group": "produced",

@@ -12,7 +12,8 @@ APP  = os.path.join(ROOT, "dist", "kitchen_app.html")
 PACKS = [("INGREDIENTS","ingredients.json","ING_DATA"),
          ("TRANSITIONS","transitions.json","TRANS_DATA"),
          ("RECIPES","recipes.json","REC_DATA"),
-         ("SEED","seed_state.json","SEED_DATA")]
+         ("SEED","seed_state.json","SEED_DATA"),
+         ("KINETICS","kinetics.json","KIN_DATA")]
 def main():
     t = open(APP).read()
     for tag, fname, var in PACKS:

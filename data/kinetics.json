@@ -1,0 +1,91 @@
+{
+ "schema": "kitchen.kinetics/1",
+ "version": 2,
+ "updated": "2026-06-11",
+ "_note": "Continuous heat + Maillard kinetics primitive (v2.1). Newton lumped-capacitance T(t)=T_env+(T0\u2212T_env)\u00b7e^(\u2212t/\u03c4) with per-ingredient \u03c4 (minutes). Maillard: dB/dt=k(T), k=k0\u00b7e^(\u2212Ea/RT). egg_zones (v2): two-zone white/yolk model for boil doneness. ALL constants seeded estimates \u2014 verify:true until cited via src.",
+ "verify": true,
+ "constants": {
+  "R_J_per_mol_K": 8.314,
+  "verify": true
+ },
+ "environments": {
+  "pan": {
+   "T_C": 180,
+   "verify": true,
+   "_note": "hob saut\u00e9 / fry surface (seeded)"
+  },
+  "oven": {
+   "T_C": 200,
+   "verify": true,
+   "_note": "roast / bake chamber (seeded)"
+  },
+  "simmer": {
+   "T_C": 100,
+   "verify": true,
+   "_note": "moist braise / boil (seeded)"
+  },
+  "counter": {
+   "T_C": 21,
+   "verify": true,
+   "_note": "ambient counter (seeded)"
+  },
+  "fridge": {
+   "T_C": 4,
+   "verify": true,
+   "_note": "cold storage (seeded)"
+  }
+ },
+ "method_env": {
+  "fat": "pan",
+  "dry": "oven",
+  "moist": "simmer",
+  "microwave": "pan"
+ },
+ "temper_env": "counter",
+ "temper_threshold_C": 15,
+ "start_temp_C": {
+  "fridge": 4,
+  "room": 21,
+  "verify": true
+ },
+ "maillard": {
+  "Ea_J_per_mol": 88000,
+  "k0_per_min": 0.2,
+  "T_ref_C": 170,
+  "browning_onset_C": 140,
+  "verify": true,
+  "_note": "Ea ~80\u201396 kJ/mol; k(T)=k0\u00b7exp(\u2212Ea/R\u00b7(1/T\u22121/T_ref)) gated below onset; k0 seeded for golden brown at ~40 m pan fry"
+ },
+ "default_tau_min": {
+  "protein": 25,
+  "veg": 18,
+  "pantry": 12,
+  "produced": 20,
+  "verify": true,
+  "_note": "lumped thermal time constants by catalog group (minutes, seeded)"
+ },
+ "tau_overrides": {
+  "beef_mince": 29,
+  "chicken": 45,
+  "potato": 22,
+  "egg": 3.5
+ },
+ "egg_zones": {
+  "verify": true,
+  "_note": "Two-zone boil model: white heats faster (near bath), yolk lags (centre). Doneness from seeded coagulation thresholds \u2014 output quality tracks inputs only.",
+  "white": {
+   "tau_min": 2.5,
+   "set_C": 62,
+   "verify": true
+  },
+  "yolk": {
+   "tau_min": 6.4,
+   "thresholds_C": {
+    "jammy": 63,
+    "medium": 70,
+    "hard": 78
+   },
+   "verify": true
+  }
+ }
+}

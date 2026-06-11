@@ -190,12 +190,32 @@
     }
    ],
    "kind": "simple"
+  },
+  "boiled_egg": {
+   "id": "boiled_egg",
+   "method": "moist",
+   "name": "Boiled eggs (7 min)",
+   "keep": 2,
+   "cookMin": 7,
+   "ingredients": [
+    {
+     "k": "egg",
+     "qty": 2,
+     "u": "each",
+     "form": "whole"
+    }
+   ],
+   "kind": "simple"
   }
  },
  "plan": [
   {
    "recipeId": "bolognese",
    "day": 1
+  },
+  {
+   "recipeId": "boiled_egg",
+   "day": 2
   },
   {
    "recipeId": "chicken_roast",

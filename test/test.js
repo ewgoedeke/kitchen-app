@@ -5,7 +5,7 @@ function engine(file, fromMarker){
   if(a<0||b<0||b<=a) throw new Error('slice fail '+file);
   const code=t.slice(a,b);
   const m={exports:{}};
-  new Function('module',code+';module.exports={CATALOG,PREP_CLASS,COARSE,NUTR,VOL,LOCATIONS,DEFAULT_RES,RES_MAP,COOK_BROWNS,LIBRARY,PLAN,INVENTORY,PERISH,shoppingList,cookSchedule,planNutrition,fitsCheck,buysFromShopping,transitionsFor,PREPPABLE,offeredForms,stateKeep,recipeGraph,topoSteps,exportRecipe,typeofRA:typeof recipeAllergens==="function"?recipeAllergens:null};')(m);
+  new Function('module',code+';module.exports={CATALOG,PREP_CLASS,COARSE,NUTR,VOL,LOCATIONS,DEFAULT_RES,RES_MAP,COOK_BROWNS,LIBRARY,PLAN,INVENTORY,PERISH,shoppingList,cookSchedule,planNutrition,fitsCheck,buysFromShopping,transitionsFor,PREPPABLE,offeredForms,stateKeep,recipeGraph,topoSteps,exportRecipe,typeofRA:typeof recipeAllergens==="function"?recipeAllergens:null,typeofTC:typeof thermalCurve==="function"?thermalCurve:null,typeofTM:typeof temperMinutes==="function"?temperMinutes:null,typeofED:typeof eggDoneness==="function"?eggDoneness:null,typeofIT:typeof ingTau==="function"?ingTau:null,KIN:typeof KD!=="undefined"?KD.kin:null};')(m);
   return m.exports;
 }
 const J=s=>JSON.stringify(s);
@@ -54,6 +54,33 @@ ok(Object.values(VOC.items).every(r=>r.store&&r.cond&&r.verify===true),'store/co
 
 // 5. data-pack markers present exactly once each
 const t=fs.readFileSync('../dist/kitchen_app.html','utf8');
-for(const tag of ['INGREDIENTS','TRANSITIONS','RECIPES','SEED'])
+for(const tag of ['INGREDIENTS','TRANSITIONS','RECIPES','SEED','KINETICS'])
   ok(t.split('/*@DATA:'+tag+'@*/').length===2 && t.split('/*@END:'+tag+'@*/').length===2,'markers x1: '+tag);
+
+// 6. kinetics primitive (v2.1)
+ok(!!N.typeofTC,'thermalCurve exists');
+ok(!!N.typeofTM,'temperMinutes exists');
+ok(N.KIN && N.KIN.schema==='kitchen.kinetics/1' && N.KIN.version>=2,'kinetics pack loaded (egg_zones)');
+const tc=N.typeofTC;
+const c0=tc('beef_mince','fat',0,{startFrom:'room'});
+ok(Math.abs(c0.T-21)<0.1,'thermalCurve t=0 → room T0 ('+c0.T+')');
+const cEnd=tc('beef_mince','fat',200,{startFrom:'room'});
+ok(Math.abs(cEnd.T-180)<1,'thermalCurve long t → pan T_env ('+cEnd.T+')');
+ok(tc('beef_mince','moist',40).brownedness===0,'moist method → zero brownedness');
+ok(tc('onion','fat',40,{startFrom:'room'}).brownedness>0.05,'fat method → positive brownedness at 40m ('+tc('onion','fat',40,{startFrom:'room'}).brownedness+')');
+const tm=N.typeofTM('beef_mince');
+ok(tm!=null&&Math.abs(tm-30)<=3,'beef_mince temperMinutes ≈ catalog temperMin 30 (got '+tm+')');
+// boiled-egg physics demo (moist bath, two-zone doneness)
+const ed=N.typeofED;
+ok(!!ed,'eggDoneness exists');
+const be=tc('egg','moist',7,{startFrom:'fridge'});
+ok(be.brownedness===0,'boiled egg: moist → no Maillard browning');
+ok(be.doneness&&be.doneness.overall==='soft-boiled (jammy)','7 m egg → soft-boiled jammy (got '+(be.doneness&&be.doneness.overall)+')');
+ok(ed('moist',12,{startFrom:'fridge'}).overall==='hard-boiled','12 m egg → hard-boiled');
+ok(ed('moist',3,{startFrom:'fridge'}).yolk==='runny','3 m egg yolk still runny');
+ok(J(RA(N.LIBRARY.boiled_egg))===J(['eggs']),'boiled egg allergens = eggs');
+// cool-down reuses same curve (counter env)
+const cool=tc('beef_mince','fat',20,{env:'counter',T0:80,startFrom:'room'});
+ok(cool.T<80&&cool.T>21,'counter cool-down: T drops from 80 toward ambient ('+cool.T+')');
+
 process.exit(F?1:0);
