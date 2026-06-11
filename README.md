@@ -54,8 +54,10 @@ This enforces the project rule: *never publish the app broken.*
 
 ## Versioning
 
-- **App**: semver in `package.json` and the `APP_VERSION` constant. Current: **2.2.0**
-  (thermal conditioning: container-aware kinetics, counter temper steps, mise-by-store hints).
+- **App**: semver in `package.json` and the `APP_VERSION` constant. Current: **2.3.0**
+  (kinetics edges on transitions: cook/temper edges carry a kinetics readout — env/τ/T_end/
+  brownedness/doneness — and cook duration is doneness-derived (egg two-zone) or safe-core
+  validated (proteins), driven by `transitions.edge_kinetics` + `cook_doneness`).
   Minor bump for engine features, patch for data-only re-pins.
 - **Data packs**: each JSON pack carries its own `version` integer, bumped when its
   schema changes shape — independent of the app version.

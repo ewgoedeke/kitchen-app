@@ -1,8 +1,8 @@
 {
  "schema": "kitchen.transitions/1",
- "version": 1,
+ "version": 2,
  "updated": "2026-06-11",
- "_note": "How ingredients move between states. prep_classes gate which transitions exist (structural, not name-string \u2014 plan \u00a70.4). coarse offsets adjust cut keep-life by coarseness. res_map binds transition\u2192station; cook_browns binds method\u2192browning. group_exceptions seeds plan item T (smart prep grouping): items that must break a like-cut batch, with reasons.",
+ "_note": "How ingredients move between states. prep_classes gate which transitions exist (structural, not name-string \u2014 plan \u00a70.4). coarse offsets adjust cut keep-life by coarseness. res_map binds transition\u2192station; cook_browns binds method\u2192browning. group_exceptions seeds plan item T (smart prep grouping): items that must break a like-cut batch, with reasons. v2: edge_kinetics binds heat-bearing transition edges to the kinetics primitive, and cook_doneness gives kinetics the doneness/safety floor it uses to derive or validate cook duration.",
  "prep_classes": {
   "root_veg": {
    "clean": 1,
@@ -109,6 +109,36 @@
   "fat": 1,
   "moist": 0,
   "microwave": 0
+ },
+ "edge_kinetics": {
+  "_note": "Binds heat-bearing transition edges to the kinetics primitive (kinetics edges on state transitions). Presence here is load-bearing: the engine only annotates an edge whose verb appears below. cook → env/tau/T_end/brownedness/brownLabel(+egg doneness); temper/cool → target threshold the edge drives toward.",
+  "cook": {
+   "env_from": "method",
+   "browns_from": "cook_browns"
+  },
+  "temper": {
+   "env": "counter",
+   "to_threshold": "temper"
+  },
+  "cool": {
+   "env": "fridge",
+   "to_threshold": "cool"
+  }
+ },
+ "cook_doneness": {
+  "_note": "Doneness/safety floor kinetics uses to derive or validate cook duration. by_group sets a safe internal temp per catalog group; egg uses the two-zone yolk model. Cook duration = max(recipe.cookMin, time-to-target); egg duration is target-derived. A per-recipe cookTo:{core_C|soft_C|yolk} overrides these. Seeded food-safety estimates — verify:true, cite a regional authority before trusting; do not fabricate thresholds.",
+  "by_group": {
+   "protein": {
+    "core_C": 74
+   },
+   "veg": {
+    "soft_C": 90
+   }
+  },
+  "egg": {
+   "yolk": "jammy"
+  },
+  "verify": true
  },
  "verbs": {
   "clean": {
