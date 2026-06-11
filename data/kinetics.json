@@ -1,6 +1,6 @@
 {
  "schema": "kitchen.kinetics/1",
- "version": 3,
+ "version": 4,
  "updated": "2026-06-11",
  "_note": "Continuous heat + Maillard kinetics primitive (v2.1). Newton lumped-capacitance T(t)=T_env+(T0\u2212T_env)\u00b7e^(\u2212t/\u03c4) with per-ingredient \u03c4 (minutes). Maillard: dB/dt=k(T), k=k0\u00b7e^(\u2212Ea/RT). egg_zones (v2): two-zone white/yolk model for boil doneness. ALL constants seeded estimates \u2014 verify:true until cited via src.",
  "verify": true,
@@ -105,5 +105,14 @@
    },
    "verify": true
   }
+ },
+ "cool_storage": {
+  "_note": "Item R: cool-down + temperature-scaled keep-life. Seeded estimates — verify:true; cite a regional food-safety authority for danger-zone limits before trusting. keep_eff only re-scales the cited CATALOG.keep (treated as keep at T_ref_store_C); it never invents an absolute shelf-life.",
+  "T_ref_store_C": 4,
+  "Q10": 2.5,
+  "dangerzone_upper_C": 60,
+  "dangerzone_max_min": 240,
+  "dangerzone_debit_frac": 0.5,
+  "verify": true
  }
 }

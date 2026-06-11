@@ -8,15 +8,16 @@ from which shopping, inventory, waste and nutrition all derive.
 The app ships as one deployable HTML file (`dist/kitchen_app.html`) — open it in a
 browser, no build step or network needed at runtime.
 
-**Current: v5.1** — full engine with bipartite builder, `scheduleWeek` + prep-ahead
-lifting, Plan analytics (`weekStats`, `bottlenecks`), and Schedule **Graph ↔ Timeline**
-toggle with zoomable swimlane SVG.
+**Current: v5.2** — full engine with bipartite builder, `scheduleWeek` + prep-ahead
+lifting, Plan analytics (`weekStats`, `bottlenecks`), Schedule **Graph ↔ Timeline**
+toggle with zoomable swimlane SVG, and kinetics-derived cool-down + keep-life for
+produced lots (issue R).
 
 ## Layout
 
 ```
 dist/
-  kitchen_app.html   The deployable artifact (monolithic v5.1 engine). Tagged per release.
+  kitchen_app.html   The deployable artifact (monolithic v5.2 engine). Tagged per release.
 data/              JSON packs from the v2.x line — retained for future re-externalization
 src/
   build.py           Splices data packs when markers present; no-op on monolithic dist
@@ -38,7 +39,7 @@ toggle **Timeline** for the week-wide Gantt.
 
 ## Versioning
 
-- **App**: semver in `package.json`. Current: **5.1.0** (full engine on main).
+- **App**: semver in `package.json`. Current: **5.2.0** (kinetics cool-down + keep-life).
 - **Data packs** (`data/`): from v2.2 line; not wired into v5.1 dist yet — re-externalize
   in a future release.
 
