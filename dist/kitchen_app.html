@@ -902,7 +902,7 @@ tr.risk td{background:var(--warn-bg)}
  "schema": "kitchen.recipes/1",
  "version": 1,
  "updated": "2026-06-11",
- "_note": "Recipe library. kind:'simple' = ingredient list + method; prep chains are synthesised by the engine. kind:'graph' (reserved, plan items K/L) = explicit bipartite graph {states:{id:{kind,keep,form}}, procs:[{id,title,trans,consumes,produces,heat,vessel,station,att,dur,pulse,waste}]} \u2014 the builder will save these. plan = default week.",
+ "_note": "Recipe library. kind:'simple' = ingredient list + method; prep chains are synthesised by the engine. kind:'graph' (reserved, plan items K/L) = explicit bipartite graph {states:{id:{kind,keep,form}}, procs:[{id,title,trans,consumes,produces,heat,vessel,station,att,dur,pulse,waste}]} — the builder will save these. plan = default week.",
  "library": {
   "bolognese": {
    "id": "bolognese",
@@ -966,7 +966,36 @@ tr.risk td{background:var(--warn-bg)}
      "u": "tbsp"
     }
    ],
-   "kind": "simple"
+   "kind": "graph",
+   "stages": [
+    {
+     "id": "soffritto",
+     "name": "Soffritto",
+     "method": "fat",
+     "cookMin": 8,
+     "consumes": [
+      "onion",
+      "carrot",
+      "celery",
+      "garlic"
+     ]
+    },
+    {
+     "id": "ragu",
+     "name": "Ragù",
+     "method": "fat",
+     "cookMin": 28,
+     "consumes": [
+      "soffritto",
+      "beef_mince",
+      "tinned_tomato",
+      "tomato_paste",
+      "stock",
+      "red_wine",
+      "oil"
+     ]
+    }
+   ]
   },
   "chicken_roast": {
    "id": "chicken_roast",
@@ -1335,7 +1364,7 @@ tr.risk td{background:var(--warn-bg)}
  }
 };/*@END:KINETICS@*/
 const KD=(()=>{const catalog={},nutr={},vol={};for(const k in ING_DATA.items){const r=ING_DATA.items[k];const c={};for(const f in r){if(f==="nutrition"||f==="vol"||f==="verify"||f==="allergen_note")continue;c[f]=r[f];}catalog[k]=c;if(r.nutrition)nutr[k]=r.nutrition;if(r.vol!=null)vol[k]=r.vol;}return{catalog,nutr,vol,trans:TRANS_DATA,library:REC_DATA.library,plan:REC_DATA.plan,inventory:SEED_DATA.inventory,seed:SEED_DATA,kin:KIN_DATA};})();
-const APP_VERSION="2.3.1";
+const APP_VERSION="2.4.0";
 function recipeAllergens(r){const s={};(r.ingredients||[]).forEach(it=>{(CATALOG[it.k].allergens||[]).forEach(a=>s[a]=1);});return Object.keys(s).sort();}
 const CATALOG=KD.catalog;
 const PREP_CLASS=KD.trans.prep_classes;
@@ -1383,7 +1412,7 @@ function cookMinutes(rep,method,recipe){const fallback=(recipe&&recipe.cookMin)|
 function edgeKinetics(trans,rep,method,dur,opts){if(!EDGE_KIN||!EDGE_KIN[trans])return null;opts=opts||{};if(trans==="cook"){if(!rep)return null;const c=thermalCurve(rep,method,dur,opts),out={trans,rep,env:c.env,tau:c.tau,T_end:c.T,brownedness:c.brownedness,brownLabel:c.brownLabel,verify:true};if(c.doneness)out.doneness=c.doneness;return out;}if(trans==="temper")return{trans,rep,env:KIN.temper_env,to_C:KIN.temper_threshold_C,dur,verify:true};if(trans==="cool")return{trans,rep,env:"fridge",to_C:KIN.cool_threshold_C||8,dur,verify:true};return null;}
 function injectTemper(k,root,states,procs,lot){const I=CATALOG[k];if(!I.temperMin)return root;const opts=lotThermalOpts(lot,k),tm=temperMinutes(k,opts),dur=Math.ceil(tm!=null?tm:I.temperMin),id=k+"_tempered";states[id]={kind:"prep",keep:I.keep,leaf:k,form:"tempered"};const pulse=dur>=10?{every:Math.min(10,Math.max(5,Math.floor(dur/3))),note:"rotate pack"}:null;procs.push({id:uid("temper"),title:"Temper "+I.name+" on counter",trans:"temper",active:0,dur,pulse,consumes:[root],produces:[id],waste:[],kin:edgeKinetics("temper",k,null,dur,opts)});return id;}
 function miseGroups(recipe){const g=recipeGraph(recipe),by={};g.procs.forEach(p=>{if(p.trans==="cook"||p.trans==="temper"||p.trans==="cool")return;const leaf=p.consumes.concat(p.produces).map(id=>g.states[id]&&g.states[id].leaf).find(Boolean);if(!leaf)return;const st=CATALOG[leaf].store||defaultLoc(leaf);by[st]=by[st]||[];by[st].push(p.title);});return by;}
-function recipeGraph(recipe){_uid=0;const g={states:{},procs:[]},roots=[];recipe.ingredients.forEach(it=>{const s=synthPrep(it.k,it.form||"whole");Object.keys(s.states).forEach(id=>{if(!g.states[id])g.states[id]=s.states[id];});s.procs.forEach(p=>g.procs.push(p));roots.push(injectTemper(it.k,s.root,g.states,g.procs,null));});const out=recipe.id;g.states[out]={kind:"cooked",keep:recipe.keep||3,name:recipe.name};const o=cookOutcome(recipe.method);const cookLeaves=roots.map(r=>g.states[r]&&g.states[r].leaf).filter(Boolean),rep=cookRep(cookLeaves),cdur=cookMinutes(rep,o.method,recipe),kin=edgeKinetics("cook",rep,o.method,cdur);const dlabel=kin&&kin.doneness?kin.doneness.overall:(o.browns&&kin?kin.brownLabel+" crust":"no browning");g.procs.push({id:uid("cook"),title:"Cook & plate · "+recipe.name+" · "+o.method+" · "+dlabel,trans:"cook",active:(o.method==="fat")?1:0,dur:cdur,consumes:roots,produces:[out],waste:[],method:o.method,browns:o.browns,crust:o.crust,rep,kin});return g;}
+function recipeGraph(recipe){_uid=0;const g={states:{},procs:[]},rootByKey={};recipe.ingredients.forEach(it=>{const s=synthPrep(it.k,it.form||"whole");Object.keys(s.states).forEach(id=>{if(!g.states[id])g.states[id]=s.states[id];});s.procs.forEach(p=>g.procs.push(p));rootByKey[it.k]=injectTemper(it.k,s.root,g.states,g.procs,null);});const roots=recipe.ingredients.map(it=>rootByKey[it.k]),out=recipe.id;function cookProc(cons,prodId,method,dur,prefix,name){const o=cookOutcome(method),leaves=cons.map(r=>g.states[r]&&g.states[r].leaf).filter(Boolean),rep=cookRep(leaves),kin=edgeKinetics("cook",rep,method,dur),dl=kin&&kin.doneness?kin.doneness.overall:(o.browns&&kin?kin.brownLabel+" crust":"no browning");g.procs.push({id:uid("cook"),title:prefix+" · "+(name||recipe.name)+" · "+method+" · "+dl,trans:"cook",active:(method==="fat")?1:0,dur,consumes:cons,produces:[prodId],waste:[],method,browns:o.browns,crust:o.crust,rep,kin});return rep;}if(recipe.stages&&recipe.stages.length){const stageOut={},consumed=new Set();let staged=0;recipe.stages.forEach(st=>{const cons=st.consumes.map(c=>stageOut[c]||rootByKey[c]).filter(Boolean);cons.forEach(c=>consumed.add(c));const sid=recipe.id+"__"+st.id,sm=st.method||recipe.method,dur=st.cookMin||0,rep=cookProc(cons,sid,sm,dur,st.name||"Stage",st.name);g.states[sid]={kind:"cooked",keep:recipe.keep||3,name:st.name||st.id,stage:st.id,leaf:rep};stageOut[st.id]=sid;staged+=dur;});const produced=Object.values(stageOut).concat(Object.values(rootByKey)),terminals=produced.filter(s=>!consumed.has(s));g.states[out]={kind:"cooked",keep:recipe.keep||3,name:recipe.name};cookProc(terminals,out,recipe.method,Math.max(0,(recipe.cookMin||0)-staged),"Plate",recipe.name);return g;}g.states[out]={kind:"cooked",keep:recipe.keep||3,name:recipe.name};const o=cookOutcome(recipe.method),rep0=cookRep(roots.map(r=>g.states[r]&&g.states[r].leaf).filter(Boolean)),cdur=cookMinutes(rep0,o.method,recipe);cookProc(roots,out,o.method,cdur,"Cook & plate",recipe.name);return g;}
 function topoSteps(g){const av={},out=[],rest=g.procs.slice();Object.keys(g.states).forEach(s=>{if(g.states[s].kind==="leaf")av[s]=1;});let gd=0;while(rest.length&&gd++<999){let mv=0;for(let i=0;i<rest.length;i++){if(rest[i].consumes.every(c=>av[c])){const p=rest.splice(i,1)[0];out.push(p);p.produces.forEach(o=>av[o]=1);mv=1;break;}}if(!mv){out.push(...rest);break;}}return out;}
 function keepFor(l){const I=CATALOG[l.k];return(l.opened!=null&&I.openedKeep!=null)?I.openedKeep:I.keep;}
 function effExpiry(l){const b=(l.opened!=null?l.opened:l.bought);return Math.min(l.sellBy!=null?l.sellBy:Infinity,b+keepFor(l));}
@@ -1422,8 +1451,8 @@ const PREPPABLE=Object.keys(CATALOG).filter(k=>prepClassOf(k));
 // resource capacities are the algorithmic inputs
 const DEFAULT_RES=KD.seed.resources;
 const RES_MAP=KD.trans.res_map;
-function stepResource(p,recipe){if(p.trans==="temper"||p.trans==="cool")return RES_MAP[p.trans]||"counter";if(p.trans==="cook")return (recipe.method==="dry")?"oven":"hob";return RES_MAP[p.trans]||"board";}
-function stepAttend(p,recipe){if(p.trans==="temper"||p.trans==="cool")return false;if(p.trans==="cook")return recipe.method==="fat";return true;}
+function stepResource(p,recipe){if(p.trans==="temper"||p.trans==="cool")return RES_MAP[p.trans]||"counter";if(p.trans==="cook")return ((p.method||recipe.method)==="dry")?"oven":"hob";return RES_MAP[p.trans]||"board";}
+function stepAttend(p,recipe){if(p.trans==="temper"||p.trans==="cool")return false;if(p.trans==="cook")return (p.method||recipe.method)==="fat";return true;}
 function recipeSteps(recipe){const g=recipeGraph(recipe),procs=g.procs,prodBy={};procs.forEach(p=>p.produces.forEach(s=>prodBy[s]=p.id));
   return procs.map(p=>({id:recipe.id+":"+p.id,recipe:recipe.id,rname:recipe.name,title:p.title,trans:p.trans,dur:p.dur,res:stepResource(p,recipe),attend:stepAttend(p,recipe),deps:p.consumes.map(c=>prodBy[c]).filter(Boolean).map(x=>recipe.id+":"+x)}));}
 function schedule(steps,res){res=Object.assign({},DEFAULT_RES,res||{});
