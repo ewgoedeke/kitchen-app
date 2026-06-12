@@ -31,8 +31,12 @@ ok(libok,'library identical modulo kind:"simple"');
 // 2. engine output regression old vs new
 ok(J(O.shoppingList(O.PLAN,O.INVENTORY,O.LIBRARY))===J(N.shoppingList(N.PLAN,N.INVENTORY,N.LIBRARY)),'shoppingList identical');
 const cs=o=>o.cookSchedule(o.PLAN,o.LIBRARY).map(d=>({day:d.day,recipeId:d.recipeId,hands:d.hands,passive:d.passive,n:d.steps.length}));
-const CS_PIN=[{day:1,recipeId:'bolognese',hands:58,passive:55,n:13},{day:2,recipeId:'boiled_egg',hands:7,passive:7,n:2},{day:3,recipeId:'chicken_roast',hands:95,passive:0,n:13},{day:4,recipeId:'chicken_hash',hands:30,passive:0,n:7},{day:6,recipeId:'boerewors_pap',hands:40,passive:0,n:4}];
-ok(J(cs(N))===J(CS_PIN),'cookSchedule pinned (v2.2 temper steps)');
+const CS_PIN=[{day:1,recipeId:'bolognese',hands:58,passive:55,n:13},{day:2,recipeId:'boiled_egg',hands:0,passive:14,n:2},{day:3,recipeId:'chicken_roast',hands:20,passive:75,n:13},{day:4,recipeId:'chicken_hash',hands:30,passive:0,n:7},{day:6,recipeId:'boerewors_pap',hands:40,passive:0,n:4}];
+ok(J(cs(N))===J(CS_PIN),'cookSchedule pinned (cook attendance = stepAttend: dry/moist passive, fat hands-on)');
+// fix: the cook step's hands-on/passive now matches the scheduler (stepAttend) — dry oven roast & moist boil free the hands
+ok(N.cookSchedule(N.PLAN,N.LIBRARY).find(d=>d.recipeId==='chicken_roast').passive===75,'dry roast cook is passive (was wrongly counted hands-on)');
+ok(N.cookSchedule(N.PLAN,N.LIBRARY).find(d=>d.recipeId==='boiled_egg').hands===0,'moist boil cook is passive');
+ok(N.cookSchedule(N.PLAN,N.LIBRARY).find(d=>d.recipeId==='bolognese').hands===58,'fat fry cook stays hands-on');
 ok(J(O.planNutrition(O.PLAN,O.LIBRARY))===J(N.planNutrition(N.PLAN,N.LIBRARY)),'planNutrition identical');
 const fc=o=>o.fitsCheck(o.INVENTORY,o.buysFromShopping(o.shoppingList(o.PLAN,o.INVENTORY,o.LIBRARY)));
 ok(J(fc(O))===J(fc(N)),'fitsCheck identical');
