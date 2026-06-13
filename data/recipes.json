@@ -2,7 +2,7 @@
  "schema": "kitchen.recipes/1",
  "version": 1,
  "updated": "2026-06-11",
- "_note": "Recipe library. kind:'simple' = ingredient list + method; prep chains are synthesised by the engine. kind:'graph' (reserved, plan items K/L) = explicit bipartite graph {states:{id:{kind,keep,form}}, procs:[{id,title,trans,consumes,produces,heat,vessel,station,att,dur,pulse,waste}]} \u2014 the builder will save these. plan = default week.",
+ "_note": "Recipe library. kind:'simple' = ingredient list + method; prep chains are synthesised by the engine. kind:'graph' (reserved, plan items K/L) = explicit bipartite graph {states:{id:{kind,keep,form}}, procs:[{id,title,trans,consumes,produces,heat,vessel,station,att,dur,pulse,waste}]} — the builder will save these. plan = default week.",
  "library": {
   "bolognese": {
    "id": "bolognese",
@@ -66,7 +66,36 @@
      "u": "tbsp"
     }
    ],
-   "kind": "simple"
+   "kind": "graph",
+   "stages": [
+    {
+     "id": "soffritto",
+     "name": "Soffritto",
+     "method": "fat",
+     "cookMin": 8,
+     "consumes": [
+      "onion",
+      "carrot",
+      "celery",
+      "garlic"
+     ]
+    },
+    {
+     "id": "ragu",
+     "name": "Ragù",
+     "method": "fat",
+     "cookMin": 28,
+     "consumes": [
+      "soffritto",
+      "beef_mince",
+      "tinned_tomato",
+      "tomato_paste",
+      "stock",
+      "red_wine",
+      "oil"
+     ]
+    }
+   ]
   },
   "chicken_roast": {
    "id": "chicken_roast",

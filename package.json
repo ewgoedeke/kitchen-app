@@ -1,13 +1,17 @@
 {
   "name": "martin-co-kitchen-app",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "description": "Single-file kitchen-operations app: ingredients as states with keep-lives, recipes as bipartite state/process graphs, a resource-constrained cook schedule driving shopping, inventory, waste and nutrition. Data lives in versioned JSON packs spliced into one deployable HTML file.",
   "private": true,
   "scripts": {
     "build": "python3 src/build.py",
     "test": "cd test && node test.js",
+    "test:ui": "node test/ui.test.js",
     "verify": "npm run build && npm test"
   },
   "license": "UNLICENSED",
+  "devDependencies": {
+    "jsdom": "^24.0.0"
+  },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
