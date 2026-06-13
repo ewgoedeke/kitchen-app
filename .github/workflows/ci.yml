@@ -17,3 +17,5 @@ jobs:
         run: git diff --exit-code dist/kitchen_app.html
       - name: Regression suite
         run: cd test && node test.js
+      - name: UI/operator smoke (jsdom, dev-only)
+        run: npm install --no-save --no-package-lock jsdom && npm run test:ui
