@@ -68,7 +68,7 @@ tr.risk td{background:var(--warn-bg)}
 .track{position:relative;height:20px;background:var(--cream);border-radius:5px;flex:none;min-width:60px}
 .blk{position:absolute;top:1px;height:18px;border-radius:4px;overflow:hidden;display:flex;align-items:center;padding:0 4px;box-shadow:0 1px 0 rgba(0,0,0,.12)}
 .blk span{font-family:'Spline Sans Mono',monospace;font-size:8.5px;color:#fff;white-space:nowrap}
-</style></head><body><div class="wrap"><header class="top"><div><div class="brand">Martin <span class="amp">&amp;</span> Co.</div><div class="tag">One model end to end — build recipes, plan the week, run a resource-constrained cook schedule, inspect ingredient transitions, keep a lot-based inventory with storage capacity, drive a shopping list, track waste, and tally nutrition.</div></div><div class="pill">integrated prototype · v2.2 · thermal conditioning</div></header><div id="nav"></div><div id="main"></div><div class="foot">Single shared engine: catalog with quantity profiles, keep-life (prep + opened clocks), prep-class affordances incl. deskin, cook method/crust, recipe synthesis, lot inventory with litre-capacity, plan-driven shopping with best-fit packs and leftover routing, waste, and macro nutrition. Quantities, pack sizes, volumes, keep-lives and macros are seeded regional estimates — calibrate before trusting; keep-lives are food-safety-adjacent, verify with a regional authority.</div></div><script>
+</style></head><body><div class="wrap"><header class="top"><div><div class="brand">Martin <span class="amp">&amp;</span> Co.</div><div class="tag">One model end to end — build recipes, plan the week, run a resource-constrained cook schedule, inspect ingredient transitions, keep a lot-based inventory with storage capacity, drive a shopping list, track waste, and tally nutrition.</div></div><div class="pill">integrated prototype · v2.6 · core-only mode</div></header><div id="nav"></div><div id="main"></div><div class="foot">Single shared engine: catalog with quantity profiles, keep-life (prep + opened clocks), prep-class affordances incl. deskin, cook method/crust, recipe synthesis, lot inventory with litre-capacity, plan-driven shopping with best-fit packs and leftover routing, waste, and macro nutrition. Quantities, pack sizes, volumes, keep-lives and macros are seeded regional estimates — calibrate before trusting; keep-lives are food-safety-adjacent, verify with a regional authority.</div></div><script>
 /* UNIFIED kitchen engine — catalog, keep-life, quantity, recipes, inventory, shopping,
    cook method/crust, storage capacity, schedule, waste, nutrition, transitions. */
 /*@DATA:INGREDIENTS@*/const ING_DATA={
@@ -1364,7 +1364,7 @@ tr.risk td{background:var(--warn-bg)}
  }
 };/*@END:KINETICS@*/
 const KD=(()=>{const catalog={},nutr={},vol={};for(const k in ING_DATA.items){const r=ING_DATA.items[k];const c={};for(const f in r){if(f==="nutrition"||f==="vol"||f==="verify"||f==="allergen_note")continue;c[f]=r[f];}catalog[k]=c;if(r.nutrition)nutr[k]=r.nutrition;if(r.vol!=null)vol[k]=r.vol;}return{catalog,nutr,vol,trans:TRANS_DATA,library:REC_DATA.library,plan:REC_DATA.plan,inventory:SEED_DATA.inventory,seed:SEED_DATA,kin:KIN_DATA};})();
-const APP_VERSION="2.5.0";
+const APP_VERSION="2.6.0";
 function recipeAllergens(r){const s={};(r.ingredients||[]).forEach(it=>{(CATALOG[it.k].allergens||[]).forEach(a=>s[a]=1);});return Object.keys(s).sort();}
 const CATALOG=KD.catalog;
 const PREP_CLASS=KD.trans.prep_classes;
@@ -1490,8 +1490,10 @@ const state={view:"plan",lib:JSON.parse(JSON.stringify(LIBRARY)),plan:JSON.parse
 const DAYS=["·","Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const dfmt=d=>d===Infinity||d==null?"—":d<0?(-d)+"d ago":d===0?"today":"in "+d+"d";
+const CORE_ONLY=true; // #24: shelve Inventory/Shopping/Waste/Nutrition; flip to false to restore all nine tabs.
+const CORE_TABS=new Set(["plan","build","cook","schedule","transitions"]);
 const TABS=[["plan","Plan"],["build","Build"],["cook","Cook schedule"],["schedule","Schedule"],["transitions","Transitions"],["inventory","Inventory"],["shop","Shopping"],["waste","Waste"],["nutrition","Nutrition"]];
-function render(){const nav=document.getElementById('nav');nav.innerHTML='';TABS.forEach(([k,l])=>{const b=el('button','tab'+(state.view===k?' on':''),l);b.onclick=()=>{state.view=k;render();};nav.appendChild(b);});
+function render(){const nav=document.getElementById('nav');nav.innerHTML='';TABS.forEach(([k,l])=>{if(CORE_ONLY&&!CORE_TABS.has(k))return;const b=el('button','tab'+(state.view===k?' on':''),l);b.onclick=()=>{state.view=k;render();};nav.appendChild(b);});
   const m=document.getElementById('main');m.innerHTML='';({plan:vPlan,build:vBuild,cook:vCook,schedule:vSched,transitions:vTrans,inventory:vInv,shop:vShop,waste:vWaste,nutrition:vNutr})[state.view](m);}
 
 function vPlan(m){m.appendChild(el('div','hint','Assign recipes to days. A dish that yields a leftover (◆) feeds later days — it flows to the shopping list as a from-the-kitchen item.'));

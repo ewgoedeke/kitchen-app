@@ -24,7 +24,7 @@ const btn = txt => [...document.querySelectorAll('#main button')].find(b => b.te
 const selects = () => [...document.querySelectorAll('#main select')];
 const libText = () => (([...document.querySelectorAll('#main .ph')].find(t => t.textContent.includes('Recipe library')) || {}).textContent || '').trim();
 
-ok(tabs().length === 9, '9 nav tabs render (' + tabs().length + ')');
+ok(tabs().length === 5, '5 core nav tabs render with CORE_ONLY on (' + tabs().length + ')');
 ok(!!document.querySelector('#main .week'), 'default Plan view renders the week grid');
 
 // --- operate the Build form as the cook would ---
