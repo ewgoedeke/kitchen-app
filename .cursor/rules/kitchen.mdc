@@ -18,7 +18,13 @@ data packs. There are two isolated surfaces — know which one you're touching b
 
 ## Build protocol (non-negotiable)
 
-1. Edit `data/*.json` only. **Never hand-edit the data blocks inside `dist/kitchen_app.html`.**
+1. **Data vs. code — know which you're changing.**
+   - *Content/data* changes go through `data/*.json`. **Never hand-edit the `/*@DATA:…@*/` data
+     blocks inside `dist/kitchen_app.html`** — the build re-splices them.
+   - *Engine/UI code* (the app's JS/HTML) is hand-edited **directly in `dist/kitchen_app.html`,
+     outside the `/*@DATA:…@*/` markers**. `src/build.py` only re-splices data blocks and never
+     touches app code, so editing app code in `dist/` is the sanctioned route (how prior engine
+     features shipped).
 2. Run `npm run build` (`python3 src/build.py`) to regenerate `dist/`, and **commit the
    rebuilt `dist/kitchen_app.html`**. CI fails if the committed artifact differs from a
    fresh build (`git diff --exit-code dist/kitchen_app.html`).
