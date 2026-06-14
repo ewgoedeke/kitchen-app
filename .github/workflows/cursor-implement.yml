@@ -1,0 +1,57 @@
+name: cursor-implement
+on:
+  issues:
+    types: [labeled]
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: cursor-impl-${{ github.event.issue.number }}
+  cancel-in-progress: true
+jobs:
+  implement:
+    if: github.event.label.name == 'ready-for-cursor'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Cursor CLI
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
+      - name: Create work branch
+        run: git switch -c "issue-${{ github.event.issue.number }}-cursor"
+      - name: Implement the issue
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          cursor-agent -p "Implement GitHub issue #${ISSUE_NUMBER} (${ISSUE_TITLE}) in this repo. Obey .cursor/rules strictly: edit data/*.json only (never hand-edit dist/ data blocks) — the build regenerates dist/; re-pin any moved numbers in test/test.js in the same change; keep builder/ isolated from core. Task details follow:
+
+          ${ISSUE_BODY}" --force --model auto --output-format text
+      - name: Rebuild artifact + regression (informational)
+        continue-on-error: true
+        run: |
+          python3 src/build.py
+          (cd test && node test.js)
+          npm install --no-save --no-package-lock jsdom && npm run test:ui
+      - name: Commit, push, open PR
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "cursor-agent"
+          git config user.email "agent@cursor.com"
+          git add -A
+          git commit -m "Implement #${{ github.event.issue.number }} via cursor-agent" || { echo "no changes — exiting"; exit 0; }
+          git push -u origin HEAD
+          gh pr create --base main --fill \
+            --body "Implements #${{ github.event.issue.number }} via cursor-agent (triggered by the ready-for-cursor label).
+
+          Plan lives in the issue. CI + the Claude reviewer/tester stations gate this PR before merge."
