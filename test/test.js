@@ -5,7 +5,7 @@ function engine(file, fromMarker){
   if(a<0||b<0||b<=a) throw new Error('slice fail '+file);
   const code=t.slice(a,b);
   const m={exports:{}};
-  new Function('module',code+';module.exports={CATALOG,PREP_CLASS,COARSE,NUTR,VOL,LOCATIONS,DEFAULT_RES,RES_MAP,COOK_BROWNS,LIBRARY,PLAN,INVENTORY,PERISH,shoppingList,cookSchedule,planNutrition,fitsCheck,buysFromShopping,transitionsFor,PREPPABLE,offeredForms,stateKeep,recipeGraph,topoSteps,exportRecipe,scheduleDay,typeofRA:typeof recipeAllergens==="function"?recipeAllergens:null,typeofMG:typeof miseGroups==="function"?miseGroups:null,typeofTC:typeof thermalCurve==="function"?thermalCurve:null,typeofTM:typeof temperMinutes==="function"?temperMinutes:null,typeofED:typeof eggDoneness==="function"?eggDoneness:null,typeofIT:typeof ingTau==="function"?ingTau:null,typeofLT:typeof lotThermalOpts==="function"?lotThermalOpts:null,typeofCM:typeof containerTauMult==="function"?containerTauMult:null,typeofCD:typeof coolMinutes==="function"?coolMinutes:null,KIN:typeof KD!=="undefined"?KD.kin:null};')(m);
+  new Function('module',code+';module.exports={CATALOG,PREP_CLASS,COARSE,NUTR,VOL,LOCATIONS,DEFAULT_RES,RES_MAP,COOK_BROWNS,LIBRARY,PLAN,INVENTORY,PERISH,shoppingList,cookSchedule,planNutrition,fitsCheck,buysFromShopping,transitionsFor,PREPPABLE,offeredForms,stateKeep,recipeGraph,topoSteps,exportRecipe,scheduleDay,planDemand:typeof planDemand==="function"?planDemand:null,servingScale:typeof servingScale==="function"?servingScale:null,recipeBaseServings:typeof recipeBaseServings==="function"?recipeBaseServings:null,scaleRecipe:typeof scaleRecipe==="function"?scaleRecipe:null,typeofRA:typeof recipeAllergens==="function"?recipeAllergens:null,typeofMG:typeof miseGroups==="function"?miseGroups:null,typeofTC:typeof thermalCurve==="function"?thermalCurve:null,typeofTM:typeof temperMinutes==="function"?temperMinutes:null,typeofED:typeof eggDoneness==="function"?eggDoneness:null,typeofIT:typeof ingTau==="function"?ingTau:null,typeofLT:typeof lotThermalOpts==="function"?lotThermalOpts:null,typeofCM:typeof containerTauMult==="function"?containerTauMult:null,typeofCD:typeof coolMinutes==="function"?coolMinutes:null,KIN:typeof KD!=="undefined"?KD.kin:null};')(m);
   return m.exports;
 }
 const J=s=>JSON.stringify(s);
@@ -137,5 +137,19 @@ ok(N.recipeGraph(N.LIBRARY.boiled_egg).procs.filter(p=>p.trans==='cook').length=
 const sdb=N.scheduleDay([{recipeId:'bolognese',day:1}],N.LIBRARY,1);
 const sSof=sdb.steps.find(s=>s.title.includes('Soffritto')),sRag=sdb.steps.find(s=>s.title.includes('Ragù')),sPl=sdb.steps.find(s=>s.title.includes('Plate'));
 ok(sSof.finish<=sRag.start&&sRag.start<=sPl.start,'scheduler sequences soffritto -> ragù -> plate from deps');
+
+// 9. servings / batch scaling (#17 keystone — "for how many people")
+ok(N.recipeBaseServings(N.LIBRARY.bolognese)===4,'default base servings = 4 (no baseServings on seed)');
+ok(N.servingScale(N.LIBRARY.bolognese,8)===2 && N.servingScale(N.LIBRARY.bolognese,2)===0.5 && N.servingScale(N.LIBRARY.bolognese)===1,'servingScale: 8→2x, 2→0.5x, none→1x');
+const beef0=N.LIBRARY.bolognese.ingredients.find(i=>i.k==='beef_mince').qty;
+const beef2=N.scaleRecipe(N.LIBRARY.bolognese,8).ingredients.find(i=>i.k==='beef_mince').qty;
+ok(beef2===beef0*2,'scaleRecipe 8 servings doubles beef_mince ('+beef0+'→'+beef2+')');
+const dBase=N.planDemand([{recipeId:'bolognese',day:1}],N.LIBRARY).beef_mince.qty;
+const dDbl=N.planDemand([{recipeId:'bolognese',day:1,servings:8}],N.LIBRARY).beef_mince.qty;
+ok(Math.abs(dDbl-2*dBase)<1e-6,'planDemand: servings:8 doubles beef demand ('+dBase+'→'+dDbl+')');
+const nBase=N.planNutrition([{recipeId:'bolognese',day:1}],N.LIBRARY).week.kcal;
+const nDbl=N.planNutrition([{recipeId:'bolognese',day:1,servings:8}],N.LIBRARY).week.kcal;
+ok(Math.abs(nDbl-2*nBase)<=1,'planNutrition: servings:8 ~doubles kcal ('+nBase+'→'+nDbl+')');
+// seed PLAN carries no servings → 1x → existing shoppingList/planNutrition parity proves no regression.
 
 process.exit(F?1:0);

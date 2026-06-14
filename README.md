@@ -54,10 +54,10 @@ This enforces the project rule: *never publish the app broken.*
 
 ## Versioning
 
-- **App**: semver in `package.json` and the `APP_VERSION` constant. Current: **2.4.0**
-  (`kind:"graph"` staged recipes: a dish can have intermediate cook stages as first-class
-  state nodes, with order derived from the bipartite consumes/produces edges. Bolognese is
-  decomposed into soffritto → ragù → dish; the scheduler sequences the stages.).
+- **App**: semver in `package.json` and the `APP_VERSION` constant. Current: **2.5.0**
+  (servings / batch scaling: `recipeBaseServings` (default 4) + `servingScale`/`scaleRecipe`;
+  a plan entry's `servings` scales ingredient quantities, demand, and nutrition. Default
+  (no servings) = 1× so seed numbers are unchanged. The keystone "for how many people" input.).
   Minor bump for engine features, patch for data-only re-pins.
 - **Data packs**: each JSON pack carries its own `version` integer, bumped when its
   schema changes shape — independent of the app version.
