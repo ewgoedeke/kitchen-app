@@ -53,6 +53,20 @@ clickTab('Plan');
 const opts = [...document.querySelectorAll('#main select.add option')].map(o => o.textContent);
 ok(opts.includes('UI smoke dish'), 'saved dish becomes selectable in the Plan dropdown');
 
+// --- #23 minimal plan input: per-dish servings rescales the derived views ---
+const weekKcal = () => parseInt((document.querySelector('#main .stat .sv') || {}).textContent || '0', 10);
+clickTab('Nutrition');
+const kcalBefore = weekKcal();
+clickTab('Plan');
+const srvInputs = [...document.querySelectorAll('#main .dchip input[type=number]')];
+ok(srvInputs.length > 0, 'Plan: each planned dish has a servings input (' + srvInputs.length + ')');
+const finishInputs = [...document.querySelectorAll('#main .dchip input[type=time]')];
+ok(finishInputs.length > 0, 'Plan: each planned dish has a finish-by input (' + finishInputs.length + ')');
+srvInputs[0].value = '12'; fire(srvInputs[0], 'change');   // day-1 dish (bolognese), base 4 → 3×
+clickTab('Nutrition');
+const kcalAfter = weekKcal();
+ok(kcalAfter > kcalBefore, 'changing a dish\'s servings rescales week nutrition (' + kcalBefore + ' -> ' + kcalAfter + ')');
+
 // --- every tab renders without a jsdom error ---
 for (const t of tabs().map(b => b.textContent.trim())) {
   domErr = null; clickTab(t);
