@@ -1364,7 +1364,7 @@ tr.risk td{background:var(--warn-bg)}
  }
 };/*@END:KINETICS@*/
 const KD=(()=>{const catalog={},nutr={},vol={};for(const k in ING_DATA.items){const r=ING_DATA.items[k];const c={};for(const f in r){if(f==="nutrition"||f==="vol"||f==="verify"||f==="allergen_note")continue;c[f]=r[f];}catalog[k]=c;if(r.nutrition)nutr[k]=r.nutrition;if(r.vol!=null)vol[k]=r.vol;}return{catalog,nutr,vol,trans:TRANS_DATA,library:REC_DATA.library,plan:REC_DATA.plan,inventory:SEED_DATA.inventory,seed:SEED_DATA,kin:KIN_DATA};})();
-const APP_VERSION="2.4.0";
+const APP_VERSION="2.5.0";
 function recipeAllergens(r){const s={};(r.ingredients||[]).forEach(it=>{(CATALOG[it.k].allergens||[]).forEach(a=>s[a]=1);});return Object.keys(s).sort();}
 const CATALOG=KD.catalog;
 const PREP_CLASS=KD.trans.prep_classes;
@@ -1418,7 +1418,12 @@ function keepFor(l){const I=CATALOG[l.k];return(l.opened!=null&&I.openedKeep!=nu
 function effExpiry(l){const b=(l.opened!=null?l.opened:l.bought);return Math.min(l.sellBy!=null?l.sellBy:Infinity,b+keepFor(l));}
 const shortClock=l=>effExpiry(l)<PERISH||l.opened!=null;
 function bestFitPacks(need,sizes){if(need<=0)return{packs:[],total:0,leftover:0};sizes=sizes.slice().sort((a,b)=>b-a);let best=null;const cap=Math.ceil(need/Math.min(...sizes))+1;const rec=(i,c,t)=>{if(t>=need){const lo=t-need,n=c.reduce((a,b)=>a+b,0);if(!best||lo<best.leftover||(lo===best.leftover&&n<best.n))best={counts:c.slice(),total:t,leftover:lo,n};return;}if(i>=sizes.length)return;for(let x=0;x<=cap;x++){c[i]=x;rec(i+1,c,t+x*sizes[i]);if(t+x*sizes[i]>need+Math.max(...sizes))break;}c[i]=0;};rec(0,new Array(sizes.length).fill(0),0);const packs=[];best.counts.forEach((x,i)=>{for(let j=0;j<x;j++)packs.push(sizes[i]);});return{packs,total:best.total,leftover:best.leftover};}
-function planDemand(plan,lib){const d={};plan.forEach(({recipeId,day})=>{const r=lib[recipeId];if(!r)return;r.ingredients.forEach(it=>{const c=toCanonical(it.k,it.qty,it.u||it.unit);if(!d[it.k])d[it.k]={qty:0,first:Infinity};d[it.k].qty+=c;d[it.k].first=Math.min(d[it.k].first,day);});});return d;}
+// ---- servings / batch scaling (#17): quantities scale by servings/baseServings; default → 1x (no change) ----
+const RECIPE_DEFAULT_SERVINGS=4;
+function recipeBaseServings(r){return (r&&r.baseServings)||RECIPE_DEFAULT_SERVINGS;}
+function servingScale(r,servings){return (servings!=null&&servings>0)?servings/recipeBaseServings(r):1;}
+function scaleRecipe(r,servings){const f=servingScale(r,servings);return {...r,servings:servings!=null?servings:recipeBaseServings(r),ingredients:r.ingredients.map(it=>({...it,qty:+(it.qty*f).toFixed(4)}))};}
+function planDemand(plan,lib){const d={};plan.forEach(({recipeId,day,servings})=>{const r=lib[recipeId];if(!r)return;const f=servingScale(r,servings);r.ingredients.forEach(it=>{const c=toCanonical(it.k,it.qty,it.u||it.unit)*f;if(!d[it.k])d[it.k]={qty:0,first:Infinity};d[it.k].qty+=c;d[it.k].first=Math.min(d[it.k].first,day);});});return d;}
 function productionLots(plan,lib){const out=[];plan.forEach(({recipeId,day})=>{const r=lib[recipeId];if(r&&r.yields)r.yields.forEach(y=>out.push({id:"prod_"+recipeId+"_"+y.k,k:y.k,qty:y.qty,bought:day,sellBy:day+CATALOG[y.k].keep,opened:null,loc:"fridge",produced:true}));});return out;}
 function shoppingList(plan,inv,lib){const dem=planDemand(plan,lib),pool=inv.concat(productionLots(plan,lib)),out=[];Object.keys(dem).forEach(k=>{const need=dem[k].qty,first=dem[k].first,I=CATALOG[k];const good=pool.filter(l=>l.k===k&&effExpiry(l)>=first);const avail=good.reduce((a,l)=>a+l.qty,0);const short=Math.max(0,need-avail);let buy;if(short<=0)buy={kind:"none"};else if(I.produced)buy={kind:"short_produced"};else if(isPackaged(k)){const bf=bestFitPacks(short,I.packs);buy={kind:"packs",packs:bf.packs,leftover:+bf.leftover.toFixed(1)};}else{let q=short;q=I.regime==="count"?Math.ceil(q):Math.ceil(q/50)*50;buy={kind:"loose",qty:q};}const fromLeftover=good.some(l=>l.produced);const timing=I.produced?{when:"from_kitchen"}:(I.keep<PERISH?{when:"perishable",buyAfter:Math.max(0,first-(I.keep-1)),buyBy:first}:{when:"anytime"});out.push({k,name:I.name,group:I.group,need:+need.toFixed(1),unit:I.unit,avail:+avail.toFixed(1),shortfall:+short.toFixed(1),packaged:isPackaged(k),produced:!!I.produced,fromLeftover,buy,timing});});return out.sort((a,b)=>a.name.localeCompare(b.name));}
 function useItUp(plan,inv,lib){const fn={},dem=planDemand(plan,lib);Object.keys(dem).forEach(k=>fn[k]=dem[k].first);return inv.map(l=>({...l,name:CATALOG[l.k].name,unit:CATALOG[l.k].unit,expiry:effExpiry(l),atRisk:(fn[l.k]==null)||(effExpiry(l)<fn[l.k])})).sort((a,b)=>a.expiry-b.expiry);}
@@ -1434,8 +1439,8 @@ function planWaste(plan,inv,lib){const streams={};plan.forEach(({recipeId})=>{co
 function exportRecipe(r){const g=recipeGraph(r);return{name:r.name,keep:r.keep,method:r.method||"moist",ingredients:r.ingredients,states:Object.fromEntries(Object.entries(g.states).map(([k,v])=>[k,{kind:v.kind,keep:v.keep}])),steps:topoSteps(g).map(p=>({title:p.title,trans:p.trans,active:!!p.active,dur:p.dur,in:p.consumes,out:p.produces,waste:p.waste||[]}))};}
 // nutrition (per canonical unit — seeded estimates)
 const NUTR=KD.nutr;
-function recipeNutrition(recipe){const t={kcal:0,p:0,c:0,f:0};recipe.ingredients.forEach(it=>{const n=NUTR[it.k];if(!n)return;const q=toCanonical(it.k,it.qty,it.u||it.unit);t.kcal+=n.kcal*q;t.p+=n.p*q;t.c+=n.c*q;t.f+=n.f*q;});Object.keys(t).forEach(k=>t[k]=Math.round(t[k]));return t;}
-function planNutrition(plan,lib){const days={},week={kcal:0,p:0,c:0,f:0};plan.forEach(({recipeId,day})=>{const r=lib[recipeId];if(!r)return;const n=recipeNutrition(r);days[day]=days[day]||{kcal:0,p:0,c:0,f:0,dishes:[]};["kcal","p","c","f"].forEach(k=>{days[day][k]+=n[k];week[k]+=n[k];});days[day].dishes.push({name:r.name,n});});return{days,week};}
+function recipeNutrition(recipe,servings){const f=servingScale(recipe,servings),t={kcal:0,p:0,c:0,f:0};recipe.ingredients.forEach(it=>{const n=NUTR[it.k];if(!n)return;const q=toCanonical(it.k,it.qty,it.u||it.unit)*f;t.kcal+=n.kcal*q;t.p+=n.p*q;t.c+=n.c*q;t.f+=n.f*q;});Object.keys(t).forEach(k=>t[k]=Math.round(t[k]));return t;}
+function planNutrition(plan,lib){const days={},week={kcal:0,p:0,c:0,f:0};plan.forEach(({recipeId,day,servings})=>{const r=lib[recipeId];if(!r)return;const n=recipeNutrition(r,servings);days[day]=days[day]||{kcal:0,p:0,c:0,f:0,dishes:[]};["kcal","p","c","f"].forEach(k=>{days[day][k]+=n[k];week[k]+=n[k];});days[day].dishes.push({name:r.name,n});});return{days,week};}
 // transitions matrix for a kind (affordance ✓/✗ + forms + cook outcome)
 function transitionsFor(k){const pc=prepClassOf(k),I=CATALOG[k];const rows=[
   {t:"clean",ok:!!(pc&&pc.clean),note:"rinse at the sink"},
