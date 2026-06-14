@@ -59,4 +59,8 @@ for (const t of tabs().map(b => b.textContent.trim())) {
   ok(!domErr && document.querySelector('#main').childElementCount > 0, 'tab renders cleanly: ' + t + (domErr ? '  ERR ' + domErr : ''));
 }
 
+clickTab('Cook schedule');
+ok(document.body.textContent.includes('Exceptions ledger'), 'Cook schedule shows Exceptions ledger on seed plan');
+ok(document.body.textContent.includes('Batch prep') || document.body.textContent.includes('Exceptions ledger'), 'Cook schedule shows prep-grouping UI');
+
 process.exit(F ? 1 : 0);

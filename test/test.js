@@ -5,7 +5,7 @@ function engine(file, fromMarker){
   if(a<0||b<0||b<=a) throw new Error('slice fail '+file);
   const code=t.slice(a,b);
   const m={exports:{}};
-  new Function('module',code+';module.exports={CATALOG,PREP_CLASS,COARSE,NUTR,VOL,LOCATIONS,DEFAULT_RES,RES_MAP,COOK_BROWNS,LIBRARY,PLAN,INVENTORY,PERISH,shoppingList,cookSchedule,planNutrition,fitsCheck,buysFromShopping,transitionsFor,PREPPABLE,offeredForms,stateKeep,recipeGraph,topoSteps,exportRecipe,scheduleDay,planDemand:typeof planDemand==="function"?planDemand:null,servingScale:typeof servingScale==="function"?servingScale:null,recipeBaseServings:typeof recipeBaseServings==="function"?recipeBaseServings:null,scaleRecipe:typeof scaleRecipe==="function"?scaleRecipe:null,typeofRA:typeof recipeAllergens==="function"?recipeAllergens:null,typeofMG:typeof miseGroups==="function"?miseGroups:null,typeofTC:typeof thermalCurve==="function"?thermalCurve:null,typeofTM:typeof temperMinutes==="function"?temperMinutes:null,typeofED:typeof eggDoneness==="function"?eggDoneness:null,typeofIT:typeof ingTau==="function"?ingTau:null,typeofLT:typeof lotThermalOpts==="function"?lotThermalOpts:null,typeofCM:typeof containerTauMult==="function"?containerTauMult:null,typeofCD:typeof coolMinutes==="function"?coolMinutes:null,KIN:typeof KD!=="undefined"?KD.kin:null};')(m);
+  new Function('module',code+';module.exports={CATALOG,PREP_CLASS,COARSE,NUTR,VOL,LOCATIONS,DEFAULT_RES,RES_MAP,COOK_BROWNS,LIBRARY,PLAN,INVENTORY,PERISH,shoppingList,cookSchedule,planNutrition,fitsCheck,buysFromShopping,transitionsFor,PREPPABLE,offeredForms,stateKeep,recipeGraph,topoSteps,exportRecipe,scheduleDay,planDemand:typeof planDemand==="function"?planDemand:null,servingScale:typeof servingScale==="function"?servingScale:null,recipeBaseServings:typeof recipeBaseServings==="function"?recipeBaseServings:null,scaleRecipe:typeof scaleRecipe==="function"?scaleRecipe:null,typeofRA:typeof recipeAllergens==="function"?recipeAllergens:null,typeofMG:typeof miseGroups==="function"?miseGroups:null,typeofPG:typeof prepGroups==="function"?prepGroups:null,typeofPGE:typeof prepGroupExceptions==="function"?prepGroupExceptions:null,GROUP_EXC:typeof GROUP_EXC!=="undefined"?GROUP_EXC:null,typeofTC:typeof thermalCurve==="function"?thermalCurve:null,typeofTM:typeof temperMinutes==="function"?temperMinutes:null,typeofED:typeof eggDoneness==="function"?eggDoneness:null,typeofIT:typeof ingTau==="function"?ingTau:null,typeofLT:typeof lotThermalOpts==="function"?lotThermalOpts:null,typeofCM:typeof containerTauMult==="function"?containerTauMult:null,typeofCD:typeof coolMinutes==="function"?coolMinutes:null,KIN:typeof KD!=="undefined"?KD.kin:null};')(m);
   return m.exports;
 }
 const J=s=>JSON.stringify(s);
@@ -104,7 +104,7 @@ ok(cd!=null&&cd>0,'coolMinutes from hot toward fridge ('+cd+')');
 
 // 7. kinetics edges on transitions (data binding + B doneness-derived/validated cook durations)
 const TR=JSON.parse(fs.readFileSync('../data/transitions.json','utf8'));
-ok(TR.version>=2&&TR.edge_kinetics&&TR.cook_doneness,'transitions v2: edge_kinetics + cook_doneness present');
+ok(TR.version>=3&&TR.edge_kinetics&&TR.cook_doneness,'transitions v3: group_exceptions live + edge_kinetics + cook_doneness present');
 ok(!!(TR.edge_kinetics.cook&&TR.edge_kinetics.temper&&TR.edge_kinetics.cool),'edge_kinetics binds cook/temper/cool verbs');
 ok(TR.cook_doneness.by_group.protein.core_C===74&&TR.cook_doneness.egg.yolk==='jammy'&&TR.cook_doneness.verify===true,'cook_doneness floors seeded + verify-flagged');
 // every cook edge carries a kin annotation (simple recipe = 1 cook; graph recipe = 1 per stage + plate)
@@ -151,5 +151,30 @@ const nBase=N.planNutrition([{recipeId:'bolognese',day:1}],N.LIBRARY).week.kcal;
 const nDbl=N.planNutrition([{recipeId:'bolognese',day:1,servings:8}],N.LIBRARY).week.kcal;
 ok(Math.abs(nDbl-2*nBase)<=1,'planNutrition: servings:8 ~doubles kcal ('+nBase+'→'+nDbl+')');
 // seed PLAN carries no servings → 1x → existing shoppingList/planNutrition parity proves no regression.
+
+// 10. smart prep grouping across ingredients (item T, #3)
+ok(!!N.typeofPG&&!!N.typeofPGE&&!!N.GROUP_EXC,'prepGroups + prepGroupExceptions + GROUP_EXC exist');
+const mdPlan=[{recipeId:'chicken_roast',day:1},{recipeId:'chicken_hash',day:1}];
+const mdLib=JSON.parse(JSON.stringify(N.LIBRARY));
+mdLib.chicken_roast={...mdLib.chicken_roast,ingredients:mdLib.chicken_roast.ingredients.map(it=>it.k==='chicken'?{...it,form:'jointed'}:it)};
+const mdDays=N.typeofPG(mdPlan,mdLib);
+ok(mdDays.length===1&&mdDays[0].day===1,'prepGroups returns one entry per planned day ('+mdDays.length+')');
+const collapsed=mdDays[0].groups.find(g=>g.members.length>=2&&new Set(g.members.map(m=>m.recipeId)).size>=2);
+ok(!!collapsed&&collapsed.members.every(m=>m.recipeId&&m.procId&&m.k),'multi-dish day: like-cuts collapse with fan-out deps ('+(collapsed&&collapsed.key)+')');
+const mdExc=mdDays[0].exceptions;
+const garlicExc=mdExc.find(e=>e.k==='garlic');
+ok(garlicExc&&garlicExc.rule==='grind_not_dice','garlic exception when planned (grind_not_dice)');
+const chickenExc=mdExc.find(e=>e.k==='chicken');
+ok(chickenExc&&chickenExc.rule==='meat_board','chicken meat_board exception when planned');
+const meatKeys=['beef_mince','chicken','wors'];
+const cutGroups=mdDays[0].groups.filter(g=>g.trans==='cut');
+ok(cutGroups.every(g=>!g.members.some(m=>meatKeys.includes(m.k))),'raw proteins never share a structural cut group');
+const pge=N.typeofPGE();
+ok(pge.find(e=>e.k==='garlic'&&e.rule==='grind_not_dice'&&e.why),'prepGroupExceptions lists garlic→grind with data why');
+ok(['beef_mince','chicken','wors'].every(k=>pge.find(e=>e.k===k&&e.rule==='meat_board'&&e.why)),'prepGroupExceptions lists three meat_board keys with data why');
+ok(pge.find(e=>e.k==='potato'&&e.rule==='opt_peel_lever'&&e.why),'prepGroupExceptions lists potato opt_peel_lever');
+ok(J(cs(N))===J(CS_PIN),'prepGroups additive: cookSchedule pin unchanged');
+ok(J(N.shoppingList(N.PLAN,N.INVENTORY,N.LIBRARY))===J(O.shoppingList(O.PLAN,O.INVENTORY,O.LIBRARY)),'prepGroups additive: shoppingList unchanged');
+ok(J(N.planNutrition(N.PLAN,N.LIBRARY))===J(O.planNutrition(O.PLAN,O.LIBRARY)),'prepGroups additive: planNutrition unchanged');
 
 process.exit(F?1:0);
