@@ -54,10 +54,10 @@ This enforces the project rule: *never publish the app broken.*
 
 ## Versioning
 
-- **App**: semver in `package.json` and the `APP_VERSION` constant. Current: **2.5.0**
-  (servings / batch scaling: `recipeBaseServings` (default 4) + `servingScale`/`scaleRecipe`;
-  a plan entry's `servings` scales ingredient quantities, demand, and nutrition. Default
-  (no servings) = 1× so seed numbers are unchanged. The keystone "for how many people" input.).
+- **App**: semver in `package.json` and the `APP_VERSION` constant. Current: **2.6.0**
+  (minimal plan input: the Plan view now sets per-dish **servings** and an optional
+  **finish-by** time — the scheduler's inputs (#23). Servings drives the v2.5.0 scaling;
+  finish-by is carried on the plan entry for the scheduler to honour.).
   Minor bump for engine features, patch for data-only re-pins.
 - **Data packs**: each JSON pack carries its own `version` integer, bumped when its
   schema changes shape — independent of the app version.
