@@ -1,0 +1,41 @@
+---
+description: Kitchen-app build protocol, surfaces, and honesty rules. Applies to all work in this repo.
+alwaysApply: true
+---
+
+# Kitchen-app working rules
+
+This repo ships as one deployable HTML file built deterministically from versioned JSON
+data packs. There are two isolated surfaces — know which one you're touching before editing.
+
+## Surfaces
+
+- **Core app** — `data/*.json` → `python3 src/build.py` → `dist/kitchen_app.html`.
+  Tested by `npm test` (regression suite) and `npm run test:ui` (jsdom smoke).
+- **Builder** — `builder/`, a standalone React Flow + Vite/TS app for editing
+  `kind:"graph"` recipes. Built with `npm run build`, tested with `npm run test:roundtrip`.
+  Its engine is **generated** from `dist/` via `npm run extract-engine` — never hand-fork it.
+
+## Build protocol (non-negotiable)
+
+1. Edit `data/*.json` only. **Never hand-edit the data blocks inside `dist/kitchen_app.html`.**
+2. Run `npm run build` (`python3 src/build.py`) to regenerate `dist/`, and **commit the
+   rebuilt `dist/kitchen_app.html`**. CI fails if the committed artifact differs from a
+   fresh build (`git diff --exit-code dist/kitchen_app.html`).
+3. If a number legitimately moves, **re-pin every affected number in `test/test.js` in the
+   same change**, and say which in the message.
+4. `npm run verify` (build + test) must be green before you consider the work done.
+5. `builder/` must not touch core `dist/`, `src/build.py`, or `test/test.js`.
+
+## Honesty rules (food-safety adjacent)
+
+- Never fabricate keep-lives, allergen declarations, IRIs, or food-safety thresholds.
+- Every ingredient record stays `verify:true` until checked against a real authority and
+  cited via a `src` field.
+
+## Versioning & conventions
+
+- Semver in `package.json` and the `APP_VERSION` constant: **minor** bump for engine
+  features, **patch** for data-only re-pins. Data packs carry their own `version` integer.
+- Branch `issue-<N>-slug`; commit messages reference `(#N)`. Tag releases `vMAJOR.MINOR.PATCH`.
+- Rule of the project: **never publish the app broken.**
