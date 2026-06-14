@@ -1,0 +1,172 @@
+:root {
+  --paper: #f7f4ef;
+  --ink: #2a2825;
+  --muted: #8a8580;
+  --line: #ddd8d0;
+  --rust: #b85c38;
+  --node-bg: #faf9f7;
+  --node-border: #d4cfc6;
+  --process-bg: #f0ede8;
+  --chrome: transparent;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+}
+
+.builder-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.builder-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  font-size: 14px;
+}
+
+.builder-toolbar select,
+.builder-toolbar button {
+  font: inherit;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.builder-toolbar button.primary {
+  background: var(--rust);
+  color: white;
+  border-color: var(--rust);
+}
+
+.builder-canvas {
+  flex: 1;
+  position: relative;
+}
+
+.state-node {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--node-bg);
+  border: 1px solid var(--chrome);
+  font-size: 12px;
+  min-width: 80px;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+
+.state-node:hover,
+.state-node.selected {
+  border-color: var(--node-border);
+}
+
+.state-node.selected {
+  border-color: var(--rust);
+  box-shadow: 0 0 0 1px var(--rust);
+}
+
+.process-node {
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: var(--process-bg);
+  border: 1px solid var(--chrome);
+  font-size: 11px;
+  min-width: 120px;
+  max-width: 200px;
+  transition: border-color 0.15s;
+}
+
+.process-node .trans {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.process-node:hover,
+.process-node.selected {
+  border-color: var(--node-border);
+}
+
+.process-node.selected {
+  border-color: var(--rust);
+}
+
+.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background: var(--muted);
+  border: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.react-flow__node:hover .react-flow__handle,
+.react-flow__node.selected .react-flow__handle {
+  opacity: 1;
+}
+
+.react-flow__handle:hover {
+  background: var(--rust);
+}
+
+.react-flow__minimap {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.link-drag-menu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 200px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  padding: 6px;
+}
+
+.link-drag-menu input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font: inherit;
+  margin-bottom: 6px;
+}
+
+.link-drag-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.link-drag-menu button:hover,
+.link-drag-menu button.focused {
+  background: var(--paper);
+}
+
+.link-drag-menu button .weight-hint {
+  color: var(--muted);
+  font-size: 11px;
+}
