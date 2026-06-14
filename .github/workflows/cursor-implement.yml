@@ -33,15 +33,24 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
-          cursor-agent -p "Implement GitHub issue #${ISSUE_NUMBER} (${ISSUE_TITLE}) in this repo. Obey .cursor/rules strictly: edit data/*.json only (never hand-edit dist/ data blocks) — the build regenerates dist/; re-pin any moved numbers in test/test.js in the same change; keep builder/ isolated from core. Task details follow:
+          cursor-agent -p --force --trust --output-format text "Implement GitHub issue #${ISSUE_NUMBER} (${ISSUE_TITLE}) in THIS repository, working in the current directory. Make the edits on disk and run the build/tests yourself — do NOT just describe or simulate; the working tree must actually contain the changes when you finish. All paths in the brief are repo-relative. Obey .cursor/rules strictly: data changes go through data/*.json; engine/UI code is hand-edited directly in dist/kitchen_app.html outside the /*@DATA@*/ markers; rebuild via python3 src/build.py; re-pin any moved numbers in test/test.js; keep builder/ isolated. Do NOT git commit — the workflow commits. Task brief follows:
 
-          ${ISSUE_BODY}" --force --model auto --output-format text
+          ${ISSUE_BODY}"
       - name: Rebuild artifact + regression (informational)
         continue-on-error: true
         run: |
           python3 src/build.py
           (cd test && node test.js)
           npm install --no-save --no-package-lock jsdom && npm run test:ui
+      - name: Guard — fail loudly if the agent made no changes
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            gh issue comment ${{ github.event.issue.number }} --body "⚠️ cursor-agent produced no file changes (headless no-op) — no PR opened. See the run logs."
+            echo "::error::cursor-agent made no changes — failing so the no-op is visible"
+            exit 1
+          fi
       - name: Commit, push, open PR
         env:
           GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
@@ -49,7 +58,7 @@ jobs:
           git config user.name "cursor-agent"
           git config user.email "agent@cursor.com"
           git add -A
-          git commit -m "Implement #${{ github.event.issue.number }} via cursor-agent" || { echo "no changes — exiting"; exit 0; }
+          git commit -m "Implement #${{ github.event.issue.number }} via cursor-agent"
           git push -u origin HEAD
           gh pr create --base main --fill \
             --body "Implements #${{ github.event.issue.number }} via cursor-agent (triggered by the ready-for-cursor label).
