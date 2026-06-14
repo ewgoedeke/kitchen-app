@@ -1,8 +1,8 @@
 {
  "schema": "kitchen.transitions/1",
- "version": 2,
- "updated": "2026-06-11",
- "_note": "How ingredients move between states. prep_classes gate which transitions exist (structural, not name-string \u2014 plan \u00a70.4). coarse offsets adjust cut keep-life by coarseness. res_map binds transition\u2192station; cook_browns binds method\u2192browning. group_exceptions seeds plan item T (smart prep grouping): items that must break a like-cut batch, with reasons. v2: edge_kinetics binds heat-bearing transition edges to the kinetics primitive, and cook_doneness gives kinetics the doneness/safety floor it uses to derive or validate cook duration.",
+ "version": 3,
+ "updated": "2026-06-14",
+ "_note": "How ingredients move between states. prep_classes gate which transitions exist (structural, not name-string \u2014 plan \u00a70.4). coarse offsets adjust cut keep-life by coarseness. res_map binds transition\u2192station; cook_browns binds method\u2192browning. group_exceptions (live: read by prepGroups) lists items that must break a like-cut batch, with reasons. v2: edge_kinetics binds heat-bearing transition edges to the kinetics primitive, and cook_doneness gives kinetics the doneness/safety floor it uses to derive or validate cook duration.",
  "prep_classes": {
   "root_veg": {
    "clean": 1,
