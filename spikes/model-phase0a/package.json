@@ -1,0 +1,9 @@
+{
+  "name": "kitchen-model-spike",
+  "private": true,
+  "type": "module",
+  "description": "Phase 0a: standalone data-model spike (no deps, no engine touch). Proves the registries + DAG resolve + scheduler + make/buy + validator before any engine integration.",
+  "scripts": {
+    "test": "node --test"
+  }
+}
