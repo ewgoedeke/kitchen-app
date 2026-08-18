@@ -1,5 +1,13 @@
 # Martin & Co. — Kitchen App
 
+> **The living implementation is kitchen-app2 → https://github.com/ewgoedeke/kitchen-app2**
+>
+> This repo is the **old** single-file app and is kept for history. The model, the React-Flow
+> builder, the eval harness and **all design docs** (`architecture.md`, `bipartite-model.md`,
+> `walkthroughs.md`, `scheduler.md`, `roadmap.md`, `mvp-plan.md`, `adding-recipes.md`) now live
+> in kitchen-app2 — `docs/` here contains one-line pointer stubs only. The plan of record is
+> [kitchen-app2/docs/plan.md](https://github.com/ewgoedeke/kitchen-app2/blob/main/docs/plan.md).
+
 A single-file, dependency-free kitchen-operations app. One shared engine models the
 whole flow: ingredients are **states with keep-lives**, recipes are **bipartite
 state/process graphs**, and the cooking week is a **resource-constrained schedule**
@@ -31,9 +39,9 @@ test/
   base.html          Reference engine (pre-externalization) for old-vs-new parity.
 dist/
   kitchen_app.html   The built, deployable artifact. Tracked; tagged per release.
-docs/                architecture.md (the spine: Builder ⟂ Scheduler split, data audit),
-                     bipartite-model.md, walkthroughs.md (graph rules), scheduler.md,
-                     mvp-plan.md, adding-recipes.md, roadmap.md; archive/ (superseded).
+docs/                Pointer stubs — the design docs moved to kitchen-app2/docs
+                     (architecture, bipartite-model, walkthroughs, scheduler, mvp-plan,
+                     adding-recipes, roadmap); archive/ (superseded).
 spikes/              Archived proofs (model-phase0a: the standalone Phase-0a model spike).
 .github/workflows/   CI: build + regression suite on every push and PR.
 ```
@@ -73,8 +81,8 @@ food-safety-adjacent: verify with a regional authority before trusting them.
 
 ## Roadmap
 
-See **`docs/roadmap.md`** — foundation-first (validator ✓, egg-family fixtures, the
-`kind:"graph"` schema per `docs/walkthroughs.md`), then expansion tracks driven by the
-foundational cookbooks (CIA methods · McGee/Myhrvold kinetics · Escoffier components ·
-Ruhlman ratios). Adding a recipe: `docs/adding-recipes.md`. The legacy A–T letter
-items live in `docs/archive/handover_prompt.md`.
+Moved. The roadmap was closed out against the kitchen-app2 code
+([kitchen-app2/docs/roadmap.md](https://github.com/ewgoedeke/kitchen-app2/blob/main/docs/roadmap.md))
+and the forward plan is [kitchen-app2/docs/plan.md](https://github.com/ewgoedeke/kitchen-app2/blob/main/docs/plan.md).
+Adding a recipe *there*: [kitchen-app2/docs/adding-recipes.md](https://github.com/ewgoedeke/kitchen-app2/blob/main/docs/adding-recipes.md).
+The legacy A–T letter items live in `docs/archive/handover_prompt.md`.
