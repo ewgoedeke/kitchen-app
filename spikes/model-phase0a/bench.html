@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kitchen model — two-day bench</title>
+<style>
+  :root{ color-scheme: light; }
+  body{ font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color:#2c2c2a; max-width:760px; margin:24px auto; padding:0 16px; line-height:1.5; }
+  h1{ font-size:20px; font-weight:600; } h3{ font-size:14px; font-weight:600; margin:14px 0 0; }
+  .sub{ color:#666; font-size:13px; margin-top:-6px; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:0 18px; margin:14px 0 0; }
+  .row{ display:flex; align-items:center; gap:8px; margin:0 0 8px; }
+  .row label{ font-size:12.5px; color:#555; min-width:90px; } .row input[type=range]{ flex:1; }
+  .row .val{ font-size:12.5px; font-weight:600; min-width:46px; text-align:right; }
+  .tabs{ margin:10px 0 6px; border-bottom:0.5px solid #ccc; }
+  .tabs button{ font-size:13px; padding:6px 14px; border:none; background:none; color:#666; border-bottom:2px solid transparent; cursor:pointer; }
+  .tabs button.on{ color:#2c2c2a; border-bottom-color:#2c2c2a; font-weight:600; }
+  textarea{ width:100%; height:360px; font-family:ui-monospace,monospace; font-size:11.5px; line-height:1.4; resize:vertical; }
+  .stat{ display:inline-block; background:#f1efe8; border-radius:8px; padding:5px 11px; margin:6px 7px 0 0; }
+  .stat .v{ font-size:16px; font-weight:600; } .stat .k{ font-size:11px; color:#666; }
+  .warn{ color:#a32d2d; font-size:12px; font-family:ui-monospace,monospace; margin:3px 0; }
+  .car{ font-size:12.5px; font-family:ui-monospace,monospace; margin:3px 0; }
+  .card{ background:#fff; border:0.5px solid #e2e0d8; border-radius:12px; padding:.6rem 1rem; margin:8px 0; }
+  .leg{ font-size:11.5px; color:#666; margin:6px 0 0; }
+  .sw{ display:inline-block; width:10px; height:10px; border-radius:3px; vertical-align:-1px; margin:0 4px 0 12px; }
+  text{ font-family:ui-sans-serif, system-ui, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Kitchen model — two-day bench</h1>
+<p class="sub">Plan a meal across Monday and Wednesday. Servings drive kinetics (boil is power-limited &rarr; linear; temper/solids cube-root). Prep is synthesised &amp; grouped; vessels &amp; pot volume constrain the schedule; carried-over intermediates get a keep-life check. No build, no deps.</p>
+<div class="grid">
+  <div class="row"><label>Servings</label><input type="range" id="t-srv" min="1" max="12" step="1" value="4"><span class="val" id="t-srv-v">4</span></div>
+  <div class="row"><label>Cooks</label><input type="range" id="t-ck" min="1" max="3" step="1" value="1"><span class="val" id="t-ck-v">1</span></div>
+  <div class="row"><label>Pots</label><input type="range" id="t-pot" min="1" max="3" step="1" value="1"><span class="val" id="t-pot-v">1</span></div>
+  <div class="row"><label>Pans</label><input type="range" id="t-pan" min="1" max="3" step="1" value="1"><span class="val" id="t-pan-v">1</span></div>
+  <div class="row"><label>Pot volume</label><input type="range" id="t-vol" min="3" max="9" step="1" value="4"><span class="val" id="t-vol-v">4 L</span></div>
+  <div class="row"><label>Temper</label><input type="checkbox" id="t-tmp" checked><span class="val" id="t-tmp-v" style="text-align:left">on</span></div>
+</div>
+<div class="tabs"><button id="tab-plan" class="on">Plan</button><button id="tab-rec">Recipe</button></div>
+<div id="pan-plan"></div>
+<div id="pan-rec" style="display:none">
+  <p class="leg" style="margin:0 0 6px">Edit steps; set each <b>day</b> to Mon or Wed. Mince has no prep (verbs []). therm: temper/boil are kinetics-driven; base*servings otherwise.</p>
+  <textarea id="t-src" spellcheck="false">{
+  "keep": { "ragu": 4, "soffritto": 3 },
+  "prep": [
+    {"ing":"onion","verbs":["wash","peel","cut"],"day":"Mon"},
+    {"ing":"carrot","verbs":["wash","peel","cut"],"day":"Mon"},
+    {"ing":"celery","verbs":["wash","cut"],"day":"Mon"},
+    {"ing":"mince","verbs":[],"day":"Mon"}
+  ],
+  "cook": [
+    {"id":"temper_mince","kind":"passive","therm":"temper","setup":1,"set":"out of fridge","after":["mince"],"day":"Mon"},
+    {"id":"fry_sof","kind":"tending","vessel":"pan","heat":"hob","base":6,"setup":1,"set":"load pan","setupSt":"pan","after":["onion","carrot","celery"],"makes":"soffritto","day":"Mon"},
+    {"id":"brown_mince","kind":"tending","vessel":"pan","heat":"hob","base":5,"setup":1,"set":"add mince","setupSt":"pan","after":["temper_mince"],"day":"Mon"},
+    {"id":"simmer_ragu","kind":"tending","vessel":"pot","heat":"hob","base":18,"vol":0.3,"setup":2,"set":"combine","setupSt":"pot","after":["fry_sof","brown_mince"],"makes":"ragu","day":"Mon"},
+    {"id":"boil_pasta","kind":"passive","vessel":"pot","heat":"hob","therm":"boil","vol":0.4,"setup":1,"set":"fill pot","setupSt":"sink","after":[],"day":"Wed"},
+    {"id":"plate","kind":"hands","base":2,"after":["simmer_ragu","boil_pasta"],"day":"Wed"}
+  ]
+}</textarea>
+  <p id="t-status" class="leg"></p>
+</div>
+<p class="leg">prep:<span class="sw" style="background:#1D9E75"></span>wash<span class="sw" style="background:#639922"></span>peel<span class="sw" style="background:#378ADD"></span>cut &nbsp; cook:<span class="sw" style="background:#7F77DD"></span>setup<span class="sw" style="background:#EF9F27"></span>tending<span class="sw" style="background:#888780"></span>passive<span class="sw" style="background:#D3D1C7"></span>switch</p>
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var ATT={hands:'hands',tending:'supervision',passive:null},FRIDGE=4,AMB=20,TEMP=15,CHG=1.5,POTVOL=4;
+  var DORD={Mon:0,Tue:1,Wed:2,Thu:3,Fri:4,Sat:5,Sun:6};
+  var VERB={wash:{st:'sink',tool:'rinse',dur:1},peel:{st:'board',tool:'peeler',dur:1.5},cut:{st:'board',tool:'knife',dur:2}};
+  function kin(T0,e,tg,tau,sz){return -tau*sz*Math.log((tg-e)/(T0-e))}
+  function boilLin(srv){return Math.round(2+1.6*srv)}
+  function buildAll(rec,srv,tmp){
+    var sz=Math.pow(srv,1/3),prod={},all=[],warn=[];
+    (rec.prep||[]).forEach(function(p){var prev=null;(p.verbs||[]).forEach(function(vb){var v=VERB[vb],id=p.ing+'_'+vb,d={};d[v.st]=1;d.hands=1;all.push({id:id,label:vb+' '+p.ing,act:vb,kind:'prep',dur:v.dur,demands:d,hands:true,ctx:v.st+'/'+v.tool,deps:prev?[prev]:[],day:p.day});prev=id});if(prev)prod[p.ing]={ids:[prev],day:p.day}});
+    (rec.cook||[]).forEach(function(c){if(!tmp&&c.therm==='temper')return;
+      var dur=c.therm==='temper'?kin(FRIDGE,AMB,TEMP,14,sz):c.therm==='boil'?boilLin(srv):Math.max(1,Math.round((c.base||1)*sz));
+      var dem={};if(c.heat)dem[c.heat]=1;if(c.vessel)dem[c.vessel]=1;if(ATT[c.kind])dem[ATT[c.kind]]=1;
+      var deps=[];(c.after||[]).forEach(function(a){var pr=prod[a];if(pr&&pr.day===c.day)deps=deps.concat(pr.ids)});
+      var bodyDeps=deps;
+      if(c.setup){var sid=c.id+'_set',sd={hands:1};if(c.setupSt)sd[c.setupSt]=1;all.push({id:sid,label:(c.set||'set '+c.id),act:'setup',kind:'prep',dur:c.setup,demands:sd,hands:true,ctx:(c.setupSt||'counter')+'/load',deps:deps.slice(),day:c.day});bodyDeps=[sid]}
+      var n=1;if(c.vessel==='pot'&&c.vol){var bv=srv*c.vol;n=Math.max(1,Math.ceil(bv/POTVOL-1e-9));if(n>1)warn.push(c.id+' ('+c.day+'): '+bv.toFixed(1)+'L > '+POTVOL+'L pot -> '+n+' batches')}
+      var ids=[];for(var b=0;b<n;b++){var id=n>1?c.id+'#'+(b+1):c.id;all.push({id:id,label:n>1?c.id+' #'+(b+1):c.id,act:c.kind,kind:'cook',dur:dur,demands:dem,hands:false,ctx:null,deps:bodyDeps.slice(),day:c.day});ids.push(id)}
+      prod[c.id]={ids:ids,day:c.day,makes:c.makes};if(c.makes)prod[c.makes]={ids:ids,day:c.day,makes:c.makes};
+    });
+    var carries={};
+    (rec.cook||[]).forEach(function(c){if(!tmp&&c.therm==='temper')return;(c.after||[]).forEach(function(a){var pr=prod[a];if(pr&&pr.day!==c.day){var nm=pr.makes||a;carries[nm]={state:nm,from:pr.day,to:c.day,keep:(rec.keep||{})[nm],gap:DORD[c.day]-DORD[pr.day]}}})});
+    return {all:all,carries:Object.keys(carries).map(function(k){return carries[k]}),warn:warn};
+  }
+  function schedule(steps,caps,chg){
+    chg=chg||0;var by={};steps.forEach(function(s){by[s.id]=s});var su={};steps.forEach(function(s){su[s.id]=[]});steps.forEach(function(s){s.deps.forEach(function(d){if(su[d])su[d].push(s.id)})});
+    var tl={};function ct(id){if(tl[id]!=null)return tl[id];var m=0;su[id].forEach(function(x){m=Math.max(m,ct(x))});return tl[id]=by[id].dur+m}steps.forEach(function(s){ct(s.id)});
+    var cap=function(r){return caps[r]!=null?caps[r]:Infinity};var busy={},st={},wk={},fn={},dn={},oc=null,sw=0;var nd=function(s){return Object.keys(s.demands)};
+    var fe=function(s,t,de){return nd(s).every(function(r){var o=(busy[r]||[]).filter(function(iv){return iv[0]<t+de&&iv[1]>t}).length;return o+s.demands[r]<=cap(r)})};
+    var ea=function(s,rt,de){var t=rt;for(var i=0;i<5000;i++){if(fe(s,t,de))return t;var nx=Infinity;nd(s).forEach(function(r){(busy[r]||[]).forEach(function(iv){if(iv[1]>t)nx=Math.min(nx,iv[1])})});if(!isFinite(nx))return t;t=nx}return t};
+    var pe=steps.slice(),g=0;
+    while(pe.length&&g++<30000){var rd=pe.filter(function(s){return s.deps.every(function(d){return dn[d]})});if(!rd.length)throw new Error('cycle');
+      var bb=null,bk=Infinity,bt=-1,br=0;rd.forEach(function(s){var tr=(s.hands&&oc&&oc!==s.ctx)?chg:0;var de=tr+s.dur;var r=0;s.deps.forEach(function(d){r=Math.max(r,fn[d]||0)});var x=ea(s,r,de);var k=x+tr;if(k<bk||(k===bk&&tl[s.id]>bt)){bb=s;bk=k;bt=tl[s.id];br=tr}});
+      var tr=br,de=tr+bb.dur,r=0;bb.deps.forEach(function(d){r=Math.max(r,fn[d]||0)});var x=ea(bb,r,de);st[bb.id]=x;wk[bb.id]=x+tr;fn[bb.id]=x+de;nd(bb).forEach(function(rr){(busy[rr]=busy[rr]||[]).push([x,fn[bb.id]])});dn[bb.id]=true;if(bb.hands){if(tr>0)sw++;oc=bb.ctx}pe.splice(pe.indexOf(bb),1)}
+    var ms=0;Object.keys(fn).forEach(function(k){ms=Math.max(ms,fn[k])});return {start:st,work:wk,finish:fn,makespan:ms,switches:sw}
+  }
+  var COL={wash:'#1D9E75',peel:'#639922',cut:'#378ADD',setup:'#7F77DD',tending:'#EF9F27',passive:'#888780'};
+  function gantt(steps,sch){
+    if(!steps.length)return '<div class="leg">no steps</div>';
+    var W=720,L=118,rh=18,pad=6,ms=sch.makespan||1;var sx=function(t){return L+t/ms*(W-L-12)};
+    var rows=steps.slice().sort(function(a,b){return sch.start[a.id]-sch.start[b.id]||a.label.localeCompare(b.label)});
+    var H=pad+rows.length*rh+20;var s='<svg width="100%" viewBox="0 0 '+W+' '+H+'">';var stp=Math.max(5,Math.round(ms/8/5)*5)||5;
+    for(var t=0;t<=ms+0.1;t+=stp){var x=sx(t);s+='<line x1="'+x+'" y1="'+pad+'" x2="'+x+'" y2="'+(H-16)+'" stroke="#e2e0d8" stroke-width="0.5"/><text x="'+x+'" y="'+(H-5)+'" font-size="9" fill="#999" text-anchor="middle">'+Math.round(t)+'</text>'}
+    rows.forEach(function(s2,i){var y=pad+i*rh,c=COL[s2.act]||'#888780';s+='<text x="0" y="'+(y+12)+'" font-size="10" fill="#555">'+s2.label+'</text>';var x0=sx(sch.start[s2.id]),xw=sx(sch.work[s2.id]),x1=sx(sch.finish[s2.id]);if(xw>x0+0.5)s+='<rect x="'+x0+'" y="'+(y+3)+'" width="'+(xw-x0)+'" height="'+(rh-6)+'" rx="2" fill="#D3D1C7"/>';s+='<rect x="'+xw+'" y="'+(y+3)+'" width="'+Math.max(2,x1-xw)+'" height="'+(rh-6)+'" rx="3" fill="'+c+'"/>'});
+    return s+'</svg>'
+  }
+  function render(){
+    var srv=+$('t-srv').value,ck=+$('t-ck').value,pot=+$('t-pot').value,pan=+$('t-pan').value,vol=+$('t-vol').value,tmp=$('t-tmp').checked;
+    $('t-srv-v').textContent=srv;$('t-ck-v').textContent=ck;$('t-pot-v').textContent=pot;$('t-pan-v').textContent=pan;$('t-vol-v').textContent=vol+' L';$('t-tmp-v').textContent=tmp?'on':'off';
+    POTVOL=vol;var rec;try{rec=JSON.parse($('t-src').value);$('t-status').textContent='parsed ok'}catch(e){$('t-status').textContent='JSON error: '+e.message;$('pan-plan').innerHTML='<div class="warn">fix the Recipe JSON</div>';return}
+    var caps={hands:ck,supervision:3,sink:1,board:1,hob:4,pot:pot,pan:pan};
+    var bs;try{bs=buildAll(rec,srv,tmp)}catch(e){$('pan-plan').innerHTML='<div class="warn">'+e.message+'</div>';return}
+    var days=[];bs.all.forEach(function(s){if(days.indexOf(s.day)<0)days.push(s.day)});days.sort(function(a,b){return DORD[a]-DORD[b]});
+    var h='';
+    days.forEach(function(d){
+      var ds=bs.all.filter(function(s){return s.day===d});if(!ds.length)return;var sch;try{sch=schedule(ds,caps,CHG)}catch(e){h+='<div class="warn">'+d+': '+e.message+'</div>';return}
+      var hands=ds.reduce(function(a,s){return a+(s.demands.hands?s.dur:0)},0);
+      h+='<h3>'+d+'</h3><div><span class="stat"><span class="v">'+Math.round(sch.makespan)+'</span> <span class="k">makespan</span></span><span class="stat"><span class="v">'+Math.round(hands)+'</span> <span class="k">hands-on</span></span><span class="stat"><span class="v">'+sch.switches+'</span> <span class="k">switches</span></span></div>';
+      bs.warn.filter(function(w){return w.indexOf('('+d+')')>=0}).forEach(function(w){h+='<div class="warn">! '+w+'</div>'});
+      h+=gantt(ds,sch);
+    });
+    if(bs.carries.length){h+='<div class="card"><div style="font-weight:600;font-size:13px;margin-bottom:4px">Made ahead &rarr; keep-life</div>';bs.carries.forEach(function(c){var ok=c.keep==null?null:c.gap<=c.keep;var m=ok===null?'<span style="color:#999">? no keep</span>':ok?'<span style="color:#3b6d11">ok</span>':'<span style="color:#a32d2d">EXPIRES</span>';h+='<div class="car">'+c.state+': made '+c.from+' &rarr; used '+c.to+' ('+c.gap+'d, keeps '+(c.keep==null?'?':c.keep)+') '+m+'</div>'});h+='</div>'}
+    $('pan-plan').innerHTML=h;
+  }
+  function tab(p){$('tab-plan').className=p?'on':'';$('tab-rec').className=p?'':'on';$('pan-plan').style.display=p?'':'none';$('pan-rec').style.display=p?'none':'';}
+  $('tab-plan').addEventListener('click',function(){tab(true)});$('tab-rec').addEventListener('click',function(){tab(false)});
+  ['t-srv','t-ck','t-pot','t-pan','t-vol'].forEach(function(id){$(id).addEventListener('input',render)});$('t-tmp').addEventListener('change',render);$('t-src').addEventListener('input',render);
+  render();
+})();
+</script>
+</body>
+</html>
